@@ -15,17 +15,26 @@ const LoginScreen = () => {
     password: "",
   });
 
-  const [login, { data, error }] = useMutation(LOGIN_USER);
+  const [login, { data, error }] = useMutation(LOGIN_USER, {
+    onCompleted: (data) => {
+      AsyncStorage.setItem("id_token", data.login.token).then(() => {
+        navigation.navigate("Home");
+      });
+    },
+    onError: () => {
+      Alert.alert("Incorrect Credentials");
+    },
+  });
 
-  if (data) {
-    AsyncStorage.setItem("id_token", data.login.token).then(() => {
-      navigation.navigate("Home");
-    });
-  }
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   const handleFormSubmit = () => {
     if (!formState.email || !formState.password) {
       return Alert.alert("All Data must be filled.");
+    }
+
+    if (!emailRegex.test(formState.email)) {
+      return Alert.alert("Please enter a valid email address.");
     }
 
     try {
@@ -33,7 +42,8 @@ const LoginScreen = () => {
         variables: { ...formState },
       });
     } catch (e) {
-      Alert.alert(e);
+      console.log(e);
+      Alert.alert("An error occurred while logging in.");
     }
   };
 

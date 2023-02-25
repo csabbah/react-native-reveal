@@ -21,7 +21,14 @@ const SignUpScreen = () => {
 
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-  const [addUser, { data, error }] = useMutation(ADD_USER);
+  const [addUser, { data, error }] = useMutation(ADD_USER, {
+    onCompleted: (data) => {
+      // If data returned is valid, redirect to home page
+      AsyncStorage.setItem("id_token", data.addUser.token).then(() => {
+        navigation.navigate("Home");
+      });
+    },
+  });
 
   // Handle submit, if either data is missing or email is invalid, alert the user
   const handleFormSubmit = () => {
@@ -36,16 +43,9 @@ const SignUpScreen = () => {
         variables: { ...formState },
       });
     } catch (e) {
-      Alert.alert(e);
+      Alert.alert("An error occurred while signing in.");
     }
   };
-
-  // If data returned is valid, redirect to home page
-  if (data) {
-    AsyncStorage.setItem("id_token", data.addUser.token).then(() => {
-      navigation.navigate("Home");
-    });
-  }
 
   // Check the token, if they are already logged in, redirect to home page
   useEffect(() => {
