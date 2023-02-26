@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, Alert } from "react-native";
+import { View, Text, TextInput, Button, Alert, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/core";
 
 import Auth from "../utils/auth";
 import { useMutation } from "@apollo/client";
 import { LOGIN_USER } from "../utils/mutations";
 
+// run this in terminal 'expo install expo-apple-authentication'
+import * as AppleAuthentication from "expo-apple-authentication";
+import jwtDecode from "jwt-decode";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
-const LoginScreen = () => {
+
+const SignInScreen = () => {
   const navigation = useNavigation();
 
   const [formState, setFormState] = useState({
@@ -57,6 +62,29 @@ const LoginScreen = () => {
     checkToken();
   }, []);
 
+  const appleLoginOrRegister = async () => {
+    try {
+      const { identityToken } = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        ],
+      });
+
+      // If identity token exists, the login was successful
+      if (identityToken) {
+        // const decodedToken = jwtDecode(identityToken);
+        AsyncStorage.setItem("id_token", JSON.stringify(identityToken)).then(
+          () => {
+            navigation.navigate("Home");
+          }
+        );
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <View
       style={{
@@ -100,13 +128,23 @@ const LoginScreen = () => {
             setFormState({ ...formState, password: text })
           }
         />
-        <View style={{ marginTop: 20 }}>
-          <Button title="Sign In" onPress={handleFormSubmit} />
+        {/* Logs in using data from MongoDB  */}
+        <View style={{ marginTop: 10 }}>
+          <Button title="Login" onPress={handleFormSubmit} />
         </View>
-        <Button title="Sign Up" onPress={() => navigation.navigate("Signup")} />
+        {/* Standard Apple Login  */}
+        {Platform.OS === "ios" && (
+          <Button onPress={appleLoginOrRegister} title="Apple login" />
+        )}
+      </View>
+      <View style={{ marginTop: 30 }}>
+        <Button
+          title="New Member?"
+          onPress={() => navigation.navigate("Signup")}
+        />
       </View>
     </View>
   );
 };
 
-export default LoginScreen;
+export default SignInScreen;

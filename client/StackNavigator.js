@@ -11,6 +11,7 @@ const StackNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
+        // Removes default header styling
         options={{ headerShown: false }}
         name="SignIn"
         component={SignInScreen}
@@ -30,7 +31,6 @@ const StackNavigator = () => {
         name="Chat"
         component={ChatScreen}
       />
-      {/* // 'options={{ headerShown: false }}' Add this to remove default header styling */}
     </Stack.Navigator>
   );
 };

@@ -19,7 +19,7 @@ const HomeScreen = () => {
     }
 
     getUser();
-  }, [user, setUser]);
+  }, []);
 
   if (!user) {
     return <Text>Loading account...</Text>;
@@ -33,7 +33,8 @@ const HomeScreen = () => {
         justifyContent: "center",
       }}
     >
-      <Text>{user && user.data.username}</Text>
+      {/* // !! If the user signs up manually and log in, the below data will return however, if they use apple login, the username doesn't return */}
+      {/* <Text>{user && user.data.username && user.data.username}</Text> */}
       <Button title="Chat Page" onPress={() => navigation.navigate("Chat")} />
     </View>
   );

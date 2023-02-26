@@ -119,10 +119,15 @@ const SignUpScreen = () => {
             setFormState({ ...formState, password: text })
           }
         />
-        <View style={{ marginTop: 20 }}>
+        <View style={{ marginTop: 10 }}>
           <Button title="Sign Up" onPress={handleFormSubmit} />
         </View>
-        <Button title="Sign In" onPress={() => navigation.navigate("SignIn")} />
+        <View style={{ marginTop: 30 }}>
+          <Button
+            title="Go back"
+            onPress={() => navigation.navigate("SignIn")}
+          />
+        </View>
       </View>
     </View>
   );

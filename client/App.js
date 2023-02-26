@@ -13,7 +13,7 @@ import {
 
 // "http://10.0.0.96:3001/graphql" < This works on Physical phone and Android sim
 // "http://localhost:3001/graphql" < This works on iOS sim
-// !! For deployed app, it should be 'graphqlLiveWebsite.com/graphql'
+// !! For deployed app, it needs to be 'graphqlLiveWebsite.com/graphql'
 const httpLink = createHttpLink({
   uri: "http://localhost:3001/graphql",
 });
