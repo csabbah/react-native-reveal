@@ -19,7 +19,7 @@ const ChatScreen = () => {
   const logout = async () => {
     try {
       await Auth.logout().then(() => {
-        navigation.navigate("SignIn");
+        navigation.navigate("Welcome");
       });
     } catch (e) {
       console.error(e);

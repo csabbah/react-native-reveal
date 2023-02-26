@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, Text, TextInput, Button, Alert, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/core";
 
-import Auth from "../utils/auth";
 import { useMutation } from "@apollo/client";
 import { LOGIN_USER } from "../utils/mutations";
 
 // run this in terminal 'expo install expo-apple-authentication'
 import * as AppleAuthentication from "expo-apple-authentication";
-import jwtDecode from "jwt-decode";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -52,16 +50,6 @@ const SignInScreen = () => {
     }
   };
 
-  useEffect(() => {
-    async function checkToken() {
-      const token = await Auth.getToken();
-      if (token) {
-        navigation.navigate("Home");
-      }
-    }
-    checkToken();
-  }, []);
-
   const appleLoginOrRegister = async () => {
     try {
       const { identityToken } = await AppleAuthentication.signInAsync({
@@ -74,6 +62,7 @@ const SignInScreen = () => {
       // If identity token exists, the login was successful
       if (identityToken) {
         // const decodedToken = jwtDecode(identityToken);
+        // !! The identityToken reveals information about the users apple account (no username though)
         AsyncStorage.setItem("id_token", JSON.stringify(identityToken)).then(
           () => {
             navigation.navigate("Home");
@@ -136,10 +125,14 @@ const SignInScreen = () => {
         {Platform.OS === "ios" && (
           <Button onPress={appleLoginOrRegister} title="Apple login" />
         )}
+        <Button
+          title="Phone login"
+          onPress={() => navigation.navigate("Welcome")}
+        />
       </View>
       <View style={{ marginTop: 30 }}>
         <Button
-          title="New Member?"
+          title="Sign up manually"
           onPress={() => navigation.navigate("Signup")}
         />
       </View>

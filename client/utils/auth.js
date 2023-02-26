@@ -40,15 +40,12 @@ class AuthService {
 
   // set token to localStorage and reload page to homepage
   async login(idToken) {
-    console.log("Sign up successful, logged in automatically", idToken);
     // Saves user token to localStorage
     await AsyncStorage.setItem("id_token", idToken);
   }
 
   // clear token from localStorage and force logout with reload
   async logout() {
-    console.log("Sign out Successful");
-
     // Clear user token and profile data from localStorage
     await AsyncStorage.removeItem("id_token");
   }
