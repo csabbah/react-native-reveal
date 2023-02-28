@@ -7,6 +7,7 @@ import {
   SignUpScreen,
   SignInScreen,
 } from "./screens/Index";
+import ProfileScreen from "./screens/ProfileScreen";
 const Stack = createNativeStackNavigator();
 
 const StackNavigator = () => {
@@ -30,7 +31,10 @@ const StackNavigator = () => {
         component={Otp}
       />
       <Stack.Screen
-        options={{ headerShown: false }}
+        options={{
+          headerShown: false,
+          animation: "slide_from_left",
+        }}
         name="Signup"
         component={SignUpScreen}
       />
@@ -38,6 +42,14 @@ const StackNavigator = () => {
         options={{ headerShown: false }}
         name="Home"
         component={HomeScreen}
+      />
+      <Stack.Screen
+        options={{
+          headerShown: false,
+          animation: "slide_from_bottom",
+        }}
+        name="Profile"
+        component={ProfileScreen}
       />
       <Stack.Screen
         options={{ headerShown: false }}

@@ -25,7 +25,6 @@ const MobileVerify = () => {
 
   const phoneRegex = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
   const isValidPhoneNumber = (phoneNumber) => {
-    console.log("THIS THIS", phoneNumber);
     return phoneRegex.test(phoneNumber);
   };
 

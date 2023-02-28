@@ -1,4 +1,4 @@
-import { View, Text, Button } from "react-native";
+import { View, Text, Button, StyleSheet } from "react-native";
 import Auth from "../utils/auth";
 import { useEffect } from "react";
 import { useNavigation } from "@react-navigation/core";
@@ -16,16 +16,6 @@ const ChatScreen = () => {
     checkToken();
   }, []);
 
-  const logout = async () => {
-    try {
-      await Auth.logout().then(() => {
-        navigation.navigate("Welcome");
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   return (
     <View
       style={{
@@ -34,10 +24,54 @@ const ChatScreen = () => {
         justifyContent: "center",
       }}
     >
-      <Text>Chat Screen</Text>
-      <Button title="Sign out" onPress={logout} />
+      <View style={{ position: "absolute", top: 100 }}>
+        <Button title="Home page" onPress={() => navigation.navigate("Home")} />
+      </View>
+      <Text>Your Chats</Text>
+      <View style={styles.wrapper}>
+        <View style={styles.card}>
+          <Text style={styles.body}>(Profile Pictures)</Text>
+          <Text style={styles.body}>
+            Hi Carlos! Nice to meet you, I'm gl...
+          </Text>
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.body}>(Profile Pictures)</Text>
+          <Text style={styles.body}>
+            Hi Carlos! Nice to meet you, I'm gl...
+          </Text>
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.body}>(Profile Pictures)</Text>
+          <Text style={styles.body}>
+            Hi Carlos! Nice to meet you, I'm gl...
+          </Text>
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.body}>(Profile Pictures)</Text>
+          <Text style={styles.body}>
+            Hi Carlos! Nice to meet you, I'm gl...
+          </Text>
+        </View>
+      </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  wrapper: {
+    paddingHorizontal: 10,
+    width: "100%",
+  },
+  card: {
+    paddingLeft: 10,
+    paddingVertical: 20,
+    marginVertical: 5,
+    backgroundColor: "rgba(0,0,0,0.1)",
+  },
+  body: {
+    fontSize: 20,
+  },
+});
 
 export default ChatScreen;
