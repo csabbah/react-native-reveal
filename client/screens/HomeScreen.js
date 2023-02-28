@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/core";
 import Auth from "../utils/auth";
 
 const HomeScreen = () => {
-  // !! Need to update this page, the data that is returns is different
+  // !! Need to update this page, the data that is returns is different (based on login/signup method)
   // !! Figure out the structure of the app firsthand (wait to meet)
   const [user, setUser] = useState(null);
 
@@ -18,21 +18,18 @@ const HomeScreen = () => {
       }
 
       // !! This needs to be updated to house real data, this is hardcoded for now to work with sms verification
-      if (
-        typeof token == "string" &&
-        token &&
-        token.username === "Logged in via Code"
-      ) {
+      if (typeof token == "string" && token.includes("Logged in via Code")) {
         let parsedData = JSON.parse(token);
         return setUser(parsedData);
       }
+
+      // !! This only works when logging in manually (since the login process signs the user (and generates a valid token))
       const account = await Auth.getProfile(token);
       setUser(account);
     }
 
     getUser();
   }, []);
-  console.log(user);
 
   if (!user) {
     return <Text>Loading account...</Text>;
@@ -46,12 +43,13 @@ const HomeScreen = () => {
         justifyContent: "center",
       }}
     >
-      {/* // !! If apple login is used, the username doesn't return */}
+      {/* If user logs in via phone login, this works */}
+      <Text>{user && !user.data && !user.aud && "Phone login"}</Text>
       <Text>
-        {/* If user logs in via phone verification, this works */}
-        {user && user.username == "Logged in via Code" && user.username}
+        {/* If user logs in via apple login, this works */}
+        {user && !user.data && user.aud && "Apple login"}
       </Text>
-      {/* If user manually logs in (no phone verification), this displays */}
+      {/* If user manually logs in, this displays */}
       <Text>{user && user.data && user.data.username}</Text>
       <Button title="Chat Page" onPress={() => navigation.navigate("Chat")} />
     </View>

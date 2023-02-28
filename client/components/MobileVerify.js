@@ -23,9 +23,9 @@ const MobileVerify = () => {
     checkToken();
   }, []);
 
-  const phoneRegex =
-    /^(\d{3}[- ]?\d{3}[- ]?\d{4}|\(\d{3}\)[- ]?\d{3}[- ]?\d{4})$/;
+  const phoneRegex = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
   const isValidPhoneNumber = (phoneNumber) => {
+    console.log("THIS THIS", phoneNumber);
     return phoneRegex.test(phoneNumber);
   };
 
@@ -61,9 +61,11 @@ const MobileVerify = () => {
         />
         <TouchableOpacity
           onPress={() => {
-            if (isValidPhoneNumber(phoneInput)) {
-              sendSmsVerification(formattedValue).then((sent) => {
-                navigation.navigate("Otp", { phoneNumber: formattedValue });
+            if (isValidPhoneNumber(value)) {
+              return sendSmsVerification(formattedValue).then((sent) => {
+                navigation.navigate("Otp", {
+                  phoneNumber: formattedValue,
+                });
               });
             }
             // !! Replace this alert with a prompt

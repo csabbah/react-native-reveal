@@ -63,6 +63,7 @@ const SignInScreen = () => {
       if (identityToken) {
         // const decodedToken = jwtDecode(identityToken);
         // !! The identityToken reveals information about the users apple account (no username though)
+        // !! Need to sign the user (similar to how we do for manual signup) so we can validate token after
         AsyncStorage.setItem("id_token", JSON.stringify(identityToken)).then(
           () => {
             navigation.navigate("Home");
