@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/core";
 import Auth from "../utils/auth";
 
+import Swiper from "react-native-deck-swiper";
+
 const HomeScreen = () => {
   // !! Need to update this page, the data that is returns is different (based on login/signup method)
   // !! Figure out the structure of the app firsthand (wait to meet)
@@ -37,6 +39,19 @@ const HomeScreen = () => {
     return <Text>Loading account...</Text>;
   }
 
+  const DUMMY_DATA = [
+    {
+      username: "user1",
+      email: "user1@gmail.com",
+      text: "This is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
+    },
+    {
+      username: "user1",
+      email: "user1@gmail.com",
+      text: "This is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
+    },
+  ];
+
   return (
     <SafeAreaView
       style={{
@@ -53,23 +68,29 @@ const HomeScreen = () => {
       </Text> */}
       {/* If user manually logs in, this displays */}
       <View style={styles.wrapper}>
-        <View style={styles.card}>
-          <Text style={styles.title}>
-            {user && user.data && user.data.username}{" "}
-          </Text>
-          <View style={styles.innerCardWrapper}>
-            <Text style={styles.body}>
-              This is an example of a prompt that says something about this and
-              something about that. Something beautiful, Something Ugly.
-            </Text>
-            <Text style={styles.learnBtn}>Learn More</Text>
-          </View>
-        </View>
+        <Swiper
+          containerStyle={{ backgroundColor: "transparent" }}
+          cards={DUMMY_DATA}
+          renderCard={(card) => {
+            return (
+              <View style={styles.card}>
+                <Text style={styles.title}>{card.username}</Text>
+                <View style={styles.cardWrapper}>
+                  <Text style={styles.title}>{card.text}</Text>
+                  <View style={styles.innerCardWrapper}>
+                    <Text style={styles.body}></Text>
+                    <Text style={styles.learnBtn}>Learn More</Text>
+                  </View>
+                </View>
+              </View>
+            );
+          }}
+        />
       </View>
-      <View style={{ position: "absolute", top: 100, right: 20 }}>
+      <View style={{ position: "absolute", top: 90, right: 20 }}>
         <Button title="Chat" onPress={() => navigation.navigate("Chat")} />
       </View>
-      <View style={{ position: "absolute", top: 100, left: 20 }}>
+      <View style={{ position: "absolute", top: 90, left: 20 }}>
         <Button
           title="Profile"
           onPress={() => navigation.navigate("Profile")}
@@ -81,28 +102,34 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    flex: 0.75,
-    width: "90%",
-    borderRadius: 10,
-    backgroundColor: "rgba(0,0,0,0.1)",
+    flex: 1,
+    marginTop: 35,
+    width: "100%",
     alignItems: "center",
+    justifyContent: "center",
   },
   card: {
-    height: "100%",
+    paddingVertical: 50,
     display: "flex",
     justifyContent: "space-between",
+    borderRadius: 10,
+    height: "80%",
+    backgroundColor: "rgba(255,255,255, 1)",
+    shadowColor: "#171717",
+    shadowOffset: { width: -2, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  cardWrapper: {
+    display: "flex",
     alignItems: "center",
   },
   title: {
     color: "#20232a",
     textAlign: "center",
-    fontSize: 30,
-    marginTop: 50,
+    fontSize: 20,
   },
-  innerCardWrapper: {
-    marginBottom: 100,
-    paddingHorizontal: 20,
-  },
+
   body: {
     textAlign: "left",
     fontSize: 20,
