@@ -52,7 +52,10 @@ const StackNavigator = () => {
         component={ProfileScreen}
       />
       <Stack.Screen
-        options={{ headerShown: false }}
+        options={{
+          headerShown: false,
+          animation: "slide_from_right",
+        }}
         name="Chat"
         component={ChatScreen}
       />

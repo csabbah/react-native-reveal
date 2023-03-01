@@ -13,7 +13,6 @@ import { useNavigation } from "@react-navigation/core";
 import Auth from "../utils/auth";
 
 import Swipeable from "react-native-gesture-handler/Swipeable";
-import { gestureHandlerRootHOC } from "react-native-gesture-handler";
 
 const HomeScreen = () => {
   // !! Screen dimensions
