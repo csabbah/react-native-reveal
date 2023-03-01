@@ -1,11 +1,25 @@
-import { View, Text, Button, SafeAreaView, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  SafeAreaView,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/core";
 import Auth from "../utils/auth";
 
-import Swiper from "react-native-deck-swiper";
+import Swipeable from "react-native-gesture-handler/Swipeable";
+import { gestureHandlerRootHOC } from "react-native-gesture-handler";
 
 const HomeScreen = () => {
+  // !! Screen dimensions
+  // const SCREEN_HEIGHT = Dimensions.get("window").height;
+  // const SCREEN_WIDTH = Dimensions.get("window").width;
+
   // !! Need to update this page, the data that is returns is different (based on login/signup method)
   // !! Figure out the structure of the app firsthand (wait to meet)
   const [user, setUser] = useState(null);
@@ -35,31 +49,109 @@ const HomeScreen = () => {
     getUser();
   }, []);
 
-  if (!user) {
-    return <Text>Loading account...</Text>;
-  }
+  const [prompt, setPrompt] = useState(0);
 
   const DUMMY_DATA = [
     {
       username: "user1",
       email: "user1@gmail.com",
-      text: "This is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
+      text: [
+        "This is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
+        "Here's another prompt about the person liking the color red",
+        "And another prompt that shows more details about the person",
+        "Last prompt that says something about them liking Marvel",
+      ],
+      info: "NAME, AGE, HOMETOWN",
     },
     {
       username: "user1",
       email: "user1@gmail.com",
-      text: "This is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
+      text: [
+        "User2 - This is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
+        "User2 - Here's another prompt about the person liking the color red",
+        "User2 - another prompt that shows more details about the person",
+        "User3 - prompt that says something about them liking Marvel",
+      ],
+      info: "NAME, AGE, HOMETOWN",
     },
   ];
 
+  const LeftSwipeNextPromptActions = () => {
+    return (
+      // When working with Swipeable....
+      // For the swiping to work, we need an element visible, otherwise, it's disabled
+      prompt === 0 ? "" : <Text style={{ opacity: 0 }}>-</Text>
+    );
+  };
+
+  const rightSwipePrevPromptActions = () => {
+    return prompt === 4 ? (
+      ""
+    ) : (
+      <Text style={{ opacity: 1, width: 0.5 }}>CARLOS IS THE BEST</Text>
+    );
+  };
+
+  const LeftSwipeRejectAction = () => {
+    if (prompt === 4) {
+      return (
+        <View
+          style={{
+            marginTop: 20,
+            paddingBottom: 90,
+            justifyContent: "center",
+            right: 30,
+            backgroundColor: "red",
+            paddingHorizontal: 30,
+          }}
+        >
+          <Text>REJECT</Text>
+        </View>
+      );
+    }
+  };
+
+  const rightSwipeMatchAction = () => {
+    if (prompt === 4) {
+      return (
+        <View
+          style={{
+            marginTop: 20,
+            height: "100%",
+            paddingBottom: 90,
+            justifyContent: "center",
+            right: 30,
+            backgroundColor: "green",
+            paddingHorizontal: 30,
+          }}
+        >
+          <Text>MATCH</Text>
+        </View>
+      );
+    }
+  };
+  const swipeLeftToReject = () => {
+    alert("You rejected");
+  };
+  const swipeRightToMatch = () => {
+    alert("You decided to match");
+  };
+
+  const swipeLeftToPreviousPrompt = () => {
+    // alert("Swipe from left");
+    setPrompt(prompt - 1);
+  };
+  const swipeRightToNextPrompt = () => {
+    // alert("Swipe from right");
+    setPrompt(prompt + 1);
+  };
+
+  if (!user) {
+    return <Text>Loading account...</Text>;
+  }
+
   return (
-    <SafeAreaView
-      style={{
-        height: "100%",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
+    <SafeAreaView style={styles.wrapper}>
       {/* // !! If user logs in via phone login, this works */}
       {/* <Text>{user && !user.data && !user.aud && "Phone login"}</Text> */}
       {/* // !! If user logs in via apple login, this works */}
@@ -67,30 +159,80 @@ const HomeScreen = () => {
         {user && !user.data && user.aud && "Apple login"}
       </Text> */}
       {/* If user manually logs in, this displays */}
-      <View style={styles.wrapper}>
-        <Swiper
-          containerStyle={{ backgroundColor: "transparent" }}
-          cards={DUMMY_DATA}
-          renderCard={(card) => {
-            return (
-              <View style={styles.card}>
-                <Text style={styles.title}>{card.username}</Text>
-                <View style={styles.cardWrapper}>
-                  <Text style={styles.title}>{card.text}</Text>
-                  <View style={styles.innerCardWrapper}>
-                    <Text style={styles.body}></Text>
-                    <Text style={styles.learnBtn}>Learn More</Text>
-                  </View>
-                </View>
+
+      {/* // !! The entire block below needs to dynamically render Profiles */}
+      {/* // !! Need to execute a query in the useEffect block and save data to user state */}
+      <Swipeable
+        renderLeftActions={LeftSwipeRejectAction}
+        renderRightActions={rightSwipeMatchAction}
+        onSwipeableRightOpen={swipeRightToMatch}
+        onSwipeableLeftOpen={swipeLeftToReject}
+      >
+        <View style={styles.singleCard}>
+          <View style={styles.cardWrapper}>
+            <View></View>
+            {prompt !== 4 && (
+              <View style={styles.midSection}>
+                <Swipeable
+                  renderLeftActions={LeftSwipeNextPromptActions}
+                  renderRightActions={rightSwipePrevPromptActions}
+                  onSwipeableRightOpen={swipeRightToNextPrompt}
+                  onSwipeableLeftOpen={swipeLeftToPreviousPrompt}
+                >
+                  <Text
+                    style={{
+                      ...styles.prompt,
+                      height: 200,
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    {DUMMY_DATA[0].text[prompt]}
+                  </Text>
+                  {prompt == 0 && (
+                    <Text
+                      style={{
+                        ...styles.prompt,
+                        marginTop: 20,
+                        fontSize: 16,
+                      }}
+                    >
+                      Swipe left to learn more
+                    </Text>
+                  )}
+                </Swipeable>
               </View>
-            );
-          }}
-        />
-      </View>
-      <View style={{ position: "absolute", top: 90, right: 20 }}>
+            )}
+            <View style={styles.bottomSection}>
+              <View style={styles.infoWrapper}>
+                <Text style={styles.info}>{DUMMY_DATA[0].info}</Text>
+              </View>
+            </View>
+            {prompt === 4 && (
+              <>
+                <View style={{ position: "absolute", bottom: 100, right: 25 }}>
+                  <Button onPress={() => swipeRightToMatch()} title="Match" />
+                </View>
+                <View style={{ position: "absolute", bottom: 100, left: 25 }}>
+                  <Button
+                    onPress={() => swipeLeftToReject()}
+                    title="Don't Match"
+                  />
+                </View>
+              </>
+            )}
+            <Image
+              blurRadius={40 - prompt * 10}
+              style={styles.image}
+              source={require("../assets/p1.jpg")}
+            />
+          </View>
+        </View>
+      </Swipeable>
+
+      <View style={{ position: "absolute", top: 60, right: 10 }}>
         <Button title="Chat" onPress={() => navigation.navigate("Chat")} />
       </View>
-      <View style={{ position: "absolute", top: 90, left: 20 }}>
+      <View style={{ position: "absolute", top: 60, left: 10 }}>
         <Button
           title="Profile"
           onPress={() => navigation.navigate("Profile")}
@@ -103,41 +245,47 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    marginTop: 35,
-    width: "100%",
+    justifyContent: "flex-end",
     alignItems: "center",
-    justifyContent: "center",
-  },
-  card: {
-    paddingVertical: 50,
-    display: "flex",
-    justifyContent: "space-between",
-    borderRadius: 10,
-    height: "80%",
-    backgroundColor: "rgba(255,255,255, 1)",
-    shadowColor: "#171717",
-    shadowOffset: { width: -2, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   cardWrapper: {
-    display: "flex",
-    alignItems: "center",
+    flex: 1,
+    justifyContent: "space-between",
   },
-  title: {
-    color: "#20232a",
-    textAlign: "center",
+  singleCard: {
+    marginTop: 20,
+    overflow: "hidden",
+    flex: 0.95,
+    width: 390,
+    backgroundColor: "white",
+  },
+  midSection: {
+    paddingHorizontal: 15,
+  },
+  bottomSection: {
+    backgroundColor: "white",
+    paddingHorizontal: 15,
+    paddingVertical: 30,
+  },
+  prompt: {
     fontSize: 20,
+    fontWeight: 500,
   },
 
-  body: {
-    textAlign: "left",
-    fontSize: 20,
-    marginBottom: 10,
+  infoWrapper: {
+    display: "flex",
+    alignItems: "flex-start",
   },
-  learnBtn: {
-    color: "blue",
+  info: {
     fontSize: 20,
+    fontWeight: 500,
+  },
+
+  image: {
+    position: "absolute",
+    zIndex: -1,
+    height: "100%",
+    width: "100%",
   },
 });
 

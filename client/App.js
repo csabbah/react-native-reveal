@@ -15,7 +15,7 @@ import {
 // "http://localhost:3001/graphql" < This works on iOS sim
 // !! For deployed app, it needs to be 'graphqlLiveWebsite.com/graphql'
 const httpLink = createHttpLink({
-  uri: "http://localhost:3001/graphql",
+  uri: "http://10.0.0.96:3001/graphql",
 });
 
 const authLink = setContext(async (_, { headers }) => {
