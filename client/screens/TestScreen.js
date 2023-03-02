@@ -1,190 +1,187 @@
-// THIS IS MORE POLISHED?
+import React, { useRef } from "react";
 import {
-  View,
-  Text,
-  Button,
-  SafeAreaView,
-  StyleSheet,
-  Image,
-  Dimensions,
   Animated,
-  ScrollView,
+  View,
+  StyleSheet,
+  PanResponder,
+  Button,
+  Vibration,
+  Platform,
+  Text,
 } from "react-native";
-import React, { useState, useEffect } from "react";
-import { useNavigation } from "@react-navigation/core";
-import Auth from "../utils/auth";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-const HomeScreen = () => {
-  var { width, height } = Dimensions.get("window");
+const App = () => {
+  // * --------- -------- -------- -------- ------- -------- ----- VIBRATION SETUP
+  // ?----------------------- Vibration setup
+  const ONE_SECOND_IN_MS = 1000;
 
-  const navigation = useNavigation();
-
-  const DUMMY_DATA = [
-    [
-      "THIS IS A TEST is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
-      "Here's another prompt about the person liking the color red",
-      "And another prompt that shows more details about the person",
-      "Last prompt that says something about them liking Marvel",
-    ],
-    [
-      "User2 - This is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
-      "User2 - Here's another prompt about the person liking the color red",
-      "User2 - another prompt that shows more details about the person",
-      "User3 - prompt that says something about them liking Marvel",
-    ],
+  const PATTERN = [
+    1 * ONE_SECOND_IN_MS,
+    2 * ONE_SECOND_IN_MS,
+    3 * ONE_SECOND_IN_MS,
   ];
 
-  const [prompt, setPrompt] = useState(0);
-  const [reset, setReset] = useState(false);
-  const [swipeExecuted, setSwipeExecuted] = useState(false);
-  const swipeFunctionality = (scrollPos) => {
-    // Revert to original state upon swiping
-    setReset(false);
+  const PATTERN_DESC =
+    Platform.OS === "android"
+      ? "wait 1s, vibrate 2s, wait 3s"
+      : "wait 1s, vibrate, wait 2s, vibrate, wait 3s";
 
-    // Threshold is specific to the device
-    var threshold = width / 5;
-    var x = scrollPos;
-
-    // Execute this function WHEN the user crosses a certain threshold
-    // Since we use a reset state (which will update the swipeExecuted state)...
-    // This ensures that the prompt doesn't keep updating even if user holds the window (to where the condition below is met)
-    if (x > threshold && !swipeExecuted) {
-      console.log("Swiped left");
-      setPrompt(prompt + 1);
-      setSwipeExecuted(true);
-    }
-
-    // Execute this when the page returns to its initial state
-    // Setting reset to true will reset the full swipe functionality
-    if (x == 0) {
-      console.log("Back to original state");
-      setReset(true);
-    }
+  // * --------- -------- -------- -------- ------- -------- ----- ANIMATION (TRANSITIONS) SETUP
+  // ?----------------------- Fade in and Out transitions
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeIn = () => {
+    // Will change fadeAnim value to 1 in 5 seconds
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 5000,
+      useNativeDriver: true,
+    }).start();
+  };
+  const fadeOut = () => {
+    // Will change fadeAnim value to 0 in a springy like fashion
+    Animated.spring(fadeAnim, {
+      toValue: 0,
+      useNativeDriver: true,
+    }).start();
   };
 
-  // Reset swipe functionality
-  const resetSwipeState = () => {
-    setSwipeExecuted(false);
-  };
+  // * --------- -------- -------- -------- ------- -------- ----- DRAGGING COMPONENTS SETUP
+  // ? ----------------------- Drag a box and upon release, return to initial position
+  // Current value of X and Y positions
+  const pan = useRef(new Animated.ValueXY()).current;
 
-  // Reset swipe state ONLY when the reset state updates
-  useEffect(() => {
-    resetSwipeState();
-  }, [reset]);
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: () => true,
+
+      onPanResponderMove: (evt, gestureState) => {
+        Animated.event(
+          [
+            null,
+            {
+              dx: pan.x, // x,y are Animated.Value
+              dy: pan.y,
+            },
+          ],
+          { useNativeDriver: false }
+        )(evt, gestureState);
+        // The active positions
+        // console.log(gestureState.moveX);
+      },
+      onPanResponderRelease: (e, gestureState) => {
+        // THe position UPON release
+        // console.log(gestureState.moveX, gestureState.moveY);
+
+        Animated.spring(pan, {
+          //.spring = back
+          // Animated.timing(pan, {
+          // .timing based
+          toValue: { x: 0, y: 0 },
+          // duration: 4000,
+          useNativeDriver: true,
+        }).start();
+      },
+    })
+  ).current;
+
+  // ?----------------------- Move and Drag a box and upon release, stay where it was originally
+  const pan2 = useRef(new Animated.ValueXY()).current;
+
+  const panResponder2 = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (evt, gestureState) => {
+        Animated.event(
+          [
+            null,
+            {
+              dx: pan2.x, // x,y are Animated.Value
+              dy: pan2.y,
+            },
+          ],
+          { useNativeDriver: false }
+        )(evt, gestureState);
+        // The active positions
+        // console.log(gestureState.moveX);
+      },
+      onPanResponderRelease: () => {
+        // Keeps the same position it had upon release
+        pan2.extractOffset();
+      },
+    })
+  ).current;
 
   return (
-    <SafeAreaView style={styles.wrapper}>
-      <ScrollView
-        //   containerStyle keeps the width consistent on android
-        contentContainerStyle={{ flexGrow: 1 }}
-        alwaysBounceHorizontal={true}
-        horizontal={true}
-        scrollEventThrottle={100}
-        onScroll={(e) => swipeFunctionality(e.nativeEvent.contentOffset.x)}
-      >
-        <View style={styles.singleCard}>
-          <View style={styles.cardWrapper}>
-            <View></View>
-            <View style={styles.midSection}>
-              <Text
-                style={{
-                  ...styles.prompt,
-                  height: 200,
-                  backgroundColor: "transparent",
-                }}
-              >
-                {DUMMY_DATA[0].text[prompt]}
-              </Text>
-              <Text
-                style={{
-                  ...styles.prompt,
-                  marginTop: 20,
-                  fontSize: 16,
-                }}
-              >
-                Swipe left to learn more
-              </Text>
-            </View>
-            <View style={styles.bottomSection}>
-              <View style={styles.infoWrapper}>
-                <Text style={styles.info}>{DUMMY_DATA[0].info}</Text>
-              </View>
-            </View>
-
-            <View style={{ position: "absolute", bottom: 100, right: 25 }}>
-              <Button onPress={() => swipeRightToMatch()} title="Match" />
-            </View>
-            <View style={{ position: "absolute", bottom: 100, left: 25 }}>
-              <Button onPress={() => swipeLeftToReject()} title="Don't Match" />
-            </View>
-
-            <Image
-              blurRadius={40 - 0 * 10}
-              style={styles.image}
-              source={require("../assets/p1.jpg")}
-            />
-          </View>
-        </View>
-      </ScrollView>
-      <View style={{ position: "absolute", top: 60, right: 10 }}>
-        <Button title="Chat" onPress={() => navigation.navigate("Chat")} />
-      </View>
-      <View style={{ position: "absolute", top: 60, left: 10 }}>
+    <View style={styles.container}>
+      <View style={styles.cardWrapper}>
+        {/* // * --------------------------------------------------- DRAGGABLE COMPONENTS SETUP */}
+        <Animated.View
+          style={{
+            // Bind opacity to animated value
+            opacity: fadeAnim,
+            transform: [{ translateX: pan.x }, { translateY: pan.y }],
+          }}
+          {...panResponder.panHandlers}
+        >
+          <View style={styles.box} />
+        </Animated.View>
+        <Animated.View
+          style={{
+            transform: [{ translateX: pan2.x }, { translateY: pan2.y }],
+          }}
+          {...panResponder2.panHandlers}
+        >
+          <View style={styles.box2} />
+        </Animated.View>
+        {/* // * --------------------------------------------------- ANIMATION (TRANSITION) SETUP */}
+        <Button title="Fade In View" onPress={fadeIn} />
+        <Button title="Fade Out" onPress={fadeOut} />
+        {/* // * --------------------------------------------------- VIBRATION SETUP */}
+        {Platform.OS === "android"
+          ? [
+              <View>
+                <Button
+                  title="Vibrate for 10 seconds"
+                  onPress={() => Vibration.vibrate(10 * ONE_SECOND_IN_MS)}
+                />
+              </View>,
+              <Separator />,
+            ]
+          : null}
         <Button
-          title="Profile"
-          onPress={() => navigation.navigate("Profile")}
+          title="Vibrate with pattern"
+          onPress={() => Vibration.vibrate()}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
+  container: {
     flex: 1,
-    justifyContent: "flex-end",
     alignItems: "center",
+    justifyContent: "center",
   },
   cardWrapper: {
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  singleCard: {
-    marginTop: 20,
-    overflow: "hidden",
-    flex: 0.95,
-    width: 390,
-    backgroundColor: "white",
-  },
-  midSection: {
-    paddingHorizontal: 15,
-  },
-  bottomSection: {
-    backgroundColor: "white",
-    paddingHorizontal: 15,
-    paddingVertical: 30,
-  },
-  prompt: {
-    fontSize: 20,
-    fontWeight: 500,
-  },
-
-  infoWrapper: {
-    display: "flex",
-    alignItems: "flex-start",
-  },
-  info: {
-    fontSize: 20,
-    fontWeight: 500,
-  },
-
-  image: {
-    position: "absolute",
-    zIndex: -1,
     height: "100%",
     width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  box: {
+    height: 150,
+    width: 150,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    borderRadius: 5,
+  },
+  box2: {
+    height: 150,
+    width: 150,
+    backgroundColor: "rgba(0,0,0,0.2)",
+    borderRadius: 5,
   },
 });
 
-export default HomeScreen;
+export default App;
