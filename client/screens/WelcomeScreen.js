@@ -2,7 +2,7 @@ import { View, Text } from "react-native";
 import React from "react";
 import MobileVerify from "../components/MobileVerify";
 
-const Welcome = () => {
+const WelcomeScreen = () => {
   return (
     <View
       style={{
@@ -16,4 +16,4 @@ const Welcome = () => {
   );
 };
 
-export default Welcome;
+export default WelcomeScreen;

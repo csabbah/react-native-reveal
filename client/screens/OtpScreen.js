@@ -7,7 +7,7 @@ import OTPInputView from "@twotalltotems/react-native-otp-input";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Otp = ({ route }) => {
+const OtpScreen = ({ route }) => {
   const navigation = useNavigation();
 
   const { phoneNumber } = route.params;
@@ -94,4 +94,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Otp;
+export default OtpScreen;

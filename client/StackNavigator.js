@@ -1,23 +1,32 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Otp from "./screens/Otp";
-import Welcome from "./screens/Welcome";
+
 import {
   HomeScreen,
   ChatScreen,
   SignUpScreen,
   SignInScreen,
+  WelcomeScreen,
+  OtpScreen,
+  ProfileScreen,
+  TestScreen,
 } from "./screens/Index";
-import ProfileScreen from "./screens/ProfileScreen";
+
 const Stack = createNativeStackNavigator();
 
 const StackNavigator = () => {
   return (
     <Stack.Navigator>
+      {/* <Stack.Screen
+        // Removes default header styling
+        options={{ headerShown: false }}
+        name="Test"
+        component={TestScreen}
+      /> */}
       <Stack.Screen
         // Removes default header styling
         options={{ headerShown: false }}
         name="Welcome"
-        component={Welcome}
+        component={WelcomeScreen}
       />
       <Stack.Screen
         // Removes default header styling
@@ -28,7 +37,7 @@ const StackNavigator = () => {
       <Stack.Screen
         options={{ headerShown: false }}
         name="Otp"
-        component={Otp}
+        component={OtpScreen}
       />
       <Stack.Screen
         options={{
