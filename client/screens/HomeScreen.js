@@ -68,7 +68,7 @@ const HomeScreen = () => {
       <View>
         <View>
           <View>
-            <Draggable disabled={prompt !== 4}>
+            <Draggable shouldReverse={true} disabled={prompt !== 4}>
               <TouchableWithoutFeedback>
                 <View>
                   <Image
