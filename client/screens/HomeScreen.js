@@ -11,42 +11,17 @@ import {
 import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/core";
 import Auth from "../utils/auth";
-
-import Swipeable from "react-native-gesture-handler/Swipeable";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const HomeScreen = () => {
   // !! Screen dimensions
-  // const SCREEN_HEIGHT = Dimensions.get("window").height;
-  // const SCREEN_WIDTH = Dimensions.get("window").width;
+  // var { width, height } = Dimensions.get("window");
 
   // !! Need to update this page, the data that is returns is different (based on login/signup method)
   // !! Figure out the structure of the app firsthand (wait to meet)
   const [user, setUser] = useState(null);
 
   const navigation = useNavigation();
-
-  useEffect(() => {
-    async function getUser() {
-      const token = await Auth.getToken();
-      if (!token) {
-        return navigation.navigate("SignIn");
-      }
-
-      // !! This needs to be updated to house real data
-      // !! This is hardcoded for now to work with sms verification
-      if (typeof token == "string" && token.includes("Logged in via Code")) {
-        let parsedData = JSON.parse(token);
-        return setUser(parsedData);
-      }
-
-      // !! This only works when logging in manually and use apple login
-      // !! (the manual and apple login signs the user (and generates a valid token))
-      const account = await Auth.getProfile(token);
-      setUser(account);
-    }
-
-    getUser();
-  }, []);
 
   const [prompt, setPrompt] = useState(0);
 
@@ -96,15 +71,13 @@ const HomeScreen = () => {
       return (
         <View
           style={{
-            marginTop: 20,
-            paddingBottom: 90,
+            margin: 0,
+            alignContent: "center",
             justifyContent: "center",
-            right: 30,
-            backgroundColor: "red",
-            paddingHorizontal: 30,
+            width: 90,
           }}
         >
-          <Text>REJECT</Text>
+          <Text color="red">REJECT</Text>
         </View>
       );
     }
@@ -115,16 +88,13 @@ const HomeScreen = () => {
       return (
         <View
           style={{
-            marginTop: 20,
-            height: "100%",
-            paddingBottom: 90,
+            margin: 0,
+            alignContent: "center",
             justifyContent: "center",
-            right: 30,
-            backgroundColor: "green",
-            paddingHorizontal: 30,
+            width: 90,
           }}
         >
-          <Text>MATCH</Text>
+          <Text color="green">MATCH</Text>
         </View>
       );
     }
@@ -144,10 +114,6 @@ const HomeScreen = () => {
     // alert("Swipe from right");
     setPrompt(prompt + 1);
   };
-
-  if (!user) {
-    return <Text>Loading account...</Text>;
-  }
 
   return (
     <SafeAreaView style={styles.wrapper}>
