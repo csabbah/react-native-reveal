@@ -21,28 +21,18 @@ const HomeScreen = () => {
   const navigation = useNavigation();
 
   const DUMMY_DATA = [
-    {
-      username: "user1",
-      email: "user1@gmail.com",
-      text: [
-        "THIS IS A TEST is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
-        "Here's another prompt about the person liking the color red",
-        "And another prompt that shows more details about the person",
-        "Last prompt that says something about them liking Marvel",
-      ],
-      info: "NAME, AGE, HOMETOWN",
-    },
-    {
-      username: "user1",
-      email: "user1@gmail.com",
-      text: [
-        "User2 - This is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
-        "User2 - Here's another prompt about the person liking the color red",
-        "User2 - another prompt that shows more details about the person",
-        "User3 - prompt that says something about them liking Marvel",
-      ],
-      info: "NAME, AGE, HOMETOWN",
-    },
+    [
+      "THIS IS A TEST is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
+      "Here's another prompt about the person liking the color red",
+      "And another prompt that shows more details about the person",
+      "Last prompt that says something about them liking Marvel",
+    ],
+    [
+      "User2 - This is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
+      "User2 - Here's another prompt about the person liking the color red",
+      "User2 - another prompt that shows more details about the person",
+      "User3 - prompt that says something about them liking Marvel",
+    ],
   ];
 
   const [prompt, setPrompt] = useState(0);

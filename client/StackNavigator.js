@@ -10,24 +10,18 @@ import {
   ProfileScreen,
   TestScreen,
 } from "./screens/Index";
-import TestScreen2 from "./screens/Test2Screen";
+
 const Stack = createNativeStackNavigator();
 
 const StackNavigator = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        // Removes default header styling
-        options={{ headerShown: false }}
-        name="Test2"
-        component={TestScreen2}
-      />
-      <Stack.Screen
+      {/* <Stack.Screen
         // Removes default header styling
         options={{ headerShown: false }}
         name="Test"
         component={TestScreen}
-      />
+      /> */}
       <Stack.Screen
         // Removes default header styling
         options={{ headerShown: false }}

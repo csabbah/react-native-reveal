@@ -1,3 +1,4 @@
+// THIS IS MORE POLISHED?
 import {
   View,
   Text,
@@ -5,195 +6,143 @@ import {
   SafeAreaView,
   StyleSheet,
   Image,
-  TouchableOpacity,
   Dimensions,
+  TouchableWithoutFeedback,
 } from "react-native";
 import React, { useState, useEffect } from "react";
+import Draggable from "react-native-draggable";
+
 import { useNavigation } from "@react-navigation/core";
-import Auth from "../utils/auth";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const HomeScreen = () => {
-  // !! Screen dimensions
-  // var { width, height } = Dimensions.get("window");
-
-  // !! Need to update this page, the data that is returns is different (based on login/signup method)
-  // !! Figure out the structure of the app firsthand (wait to meet)
-  const [user, setUser] = useState(null);
-
   const navigation = useNavigation();
 
   const [prompt, setPrompt] = useState(0);
+  const [reset, setReset] = useState(false);
+  const [swipeExecuted, setSwipeExecuted] = useState(false);
+
+  var { width, height } = Dimensions.get("window");
 
   const DUMMY_DATA = [
-    {
-      username: "user1",
-      email: "user1@gmail.com",
-      text: [
-        "This is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
-        "Here's another prompt about the person liking the color red",
-        "And another prompt that shows more details about the person",
-        "Last prompt that says something about them liking Marvel",
-      ],
-      info: "NAME, AGE, HOMETOWN",
-    },
-    {
-      username: "user1",
-      email: "user1@gmail.com",
-      text: [
-        "User2 - This is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
-        "User2 - Here's another prompt about the person liking the color red",
-        "User2 - another prompt that shows more details about the person",
-        "User3 - prompt that says something about them liking Marvel",
-      ],
-      info: "NAME, AGE, HOMETOWN",
-    },
+    "THIS IS A TEST is an example of a prompt that says something about this and something about that. Something beautiful, Something Ugly.",
+    "Here's another prompt about the person liking the color red",
+    "And another prompt that shows more details about the person",
+    "Last prompt that says something about them liking Marvel",
   ];
 
-  const LeftSwipeNextPromptActions = () => {
-    return (
-      // When working with Swipeable....
-      // For the swiping to work, we need an element visible, otherwise, it's disabled
-      prompt === 0 ? "" : <Text style={{ opacity: 0 }}>-</Text>
-    );
-  };
+  const swipeFunctionality = (scrollPos) => {
+    // Revert to original state upon swiping
+    setReset(false);
 
-  const rightSwipePrevPromptActions = () => {
-    return prompt === 4 ? (
-      ""
-    ) : (
-      <Text style={{ opacity: 1, width: 0.5 }}>CARLOS IS THE BEST</Text>
-    );
-  };
+    // Threshold is specific to the device
+    // var threshold = width / 5;
 
-  const LeftSwipeRejectAction = () => {
-    if (prompt === 4) {
-      return (
-        <View
-          style={{
-            margin: 0,
-            alignContent: "center",
-            justifyContent: "center",
-            width: 90,
-          }}
-        >
-          <Text color="red">REJECT</Text>
-        </View>
-      );
+    // Execute this function WHEN the user crosses a certain threshold
+    // Since we use a reset state (which will update the swipeExecuted state)...
+    // This ensures that the prompt doesn't keep updating even if user holds the window (to where the condition below is met)
+    if (scrollPos > 100 && prompt !== 0 && !swipeExecuted) {
+      console.log("Swiped left");
+      setPrompt(prompt - 1);
+      setSwipeExecuted(true);
+    }
+
+    if (scrollPos < -100 && !swipeExecuted) {
+      console.log("Swiped Right");
+      setSwipeExecuted(true);
+      setPrompt(prompt + 1);
     }
   };
 
-  const rightSwipeMatchAction = () => {
-    if (prompt === 4) {
-      return (
-        <View
-          style={{
-            margin: 0,
-            alignContent: "center",
-            justifyContent: "center",
-            width: 90,
-          }}
-        >
-          <Text color="green">MATCH</Text>
-        </View>
-      );
-    }
-  };
-  const swipeLeftToReject = () => {
-    alert("You rejected");
-  };
-  const swipeRightToMatch = () => {
-    alert("You decided to match");
+  // Reset swipe functionality
+  const resetSwipeState = () => {
+    setSwipeExecuted(false);
   };
 
-  const swipeLeftToPreviousPrompt = () => {
-    // alert("Swipe from left");
-    setPrompt(prompt - 1);
-  };
-  const swipeRightToNextPrompt = () => {
-    // alert("Swipe from right");
-    setPrompt(prompt + 1);
-  };
+  // Reset swipe state ONLY when the reset state updates
+  useEffect(() => {
+    resetSwipeState();
+  }, [reset]);
 
   return (
-    <SafeAreaView style={styles.wrapper}>
-      {/* // !! If user logs in via phone login, this works */}
-      {/* <Text>{user && !user.data && !user.aud && "Phone login"}</Text> */}
-      {/* // !! If user logs in via apple login, this works */}
-      {/* <Text>
-        {user && !user.data && user.aud && "Apple login"}
-      </Text> */}
-      {/* If user manually logs in, this displays */}
-
-      {/* // !! The entire block below needs to dynamically render Profiles */}
-      {/* // !! Need to execute a query in the useEffect block and save data to user state */}
-      <Swipeable
-        renderLeftActions={LeftSwipeRejectAction}
-        renderRightActions={rightSwipeMatchAction}
-        onSwipeableRightOpen={swipeRightToMatch}
-        onSwipeableLeftOpen={swipeLeftToReject}
-      >
-        <View style={styles.singleCard}>
-          <View style={styles.cardWrapper}>
-            <View></View>
-            {prompt !== 4 && (
-              <View style={styles.midSection}>
-                <Swipeable
-                  renderLeftActions={LeftSwipeNextPromptActions}
-                  renderRightActions={rightSwipePrevPromptActions}
-                  onSwipeableRightOpen={swipeRightToNextPrompt}
-                  onSwipeableLeftOpen={swipeLeftToPreviousPrompt}
-                >
+    <View style={styles.wrapper}>
+      <View>
+        <View>
+          <View>
+            <Draggable disabled={prompt !== 4}>
+              <TouchableWithoutFeedback>
+                <View>
+                  <Image
+                    blurRadius={40 - prompt * 10}
+                    style={{ ...styles.image, opacity: 1 }}
+                    source={require("../assets/p1.jpg")}
+                  />
+                  <Text
+                    style={{
+                      position: "absolute",
+                      bottom: "50%",
+                      fontWeight: 600,
+                      left: -100,
+                      fontSize: 25,
+                    }}
+                  >
+                    Reject
+                  </Text>
+                  <Text
+                    style={{
+                      position: "absolute",
+                      bottom: "50%",
+                      fontWeight: 600,
+                      right: -100,
+                      fontSize: 25,
+                    }}
+                  >
+                    Match
+                  </Text>
+                </View>
+              </TouchableWithoutFeedback>
+            </Draggable>
+          </View>
+          {prompt !== 4 && (
+            <Draggable
+              // disabled={true} < Disables Scroll
+              // By Setting maxY and minY to the same value, it essentially disables vertical draggable
+              maxY={height / 2}
+              minY={height / 2}
+              // Starting position of component
+              //   x={width / 2}
+              y={height / 2}
+              shouldReverse={true}
+              onPressIn={() => console.log("Box clicked")}
+              onDragRelease={() => {
+                // Execute this when the page returns to its initial state
+                // Setting reset to true will reset the full swipe functionality
+                console.log("Back to original state");
+                setReset(true);
+              }}
+              // This returns position of component
+              onDrag={(e, pos) => swipeFunctionality(pos.dx)}
+            >
+              <View styles={styles.singleCard}>
+                <Text style={{ ...styles.prompt, right: 200, top: "50%" }}>
+                  Nothing here!
+                </Text>
+                <Text style={styles.prompt}>{DUMMY_DATA[prompt]}</Text>
+                {prompt == 0 && (
                   <Text
                     style={{
                       ...styles.prompt,
-                      height: 200,
-                      backgroundColor: "transparent",
+                      marginTop: 20,
+                      fontSize: 16,
                     }}
                   >
-                    {DUMMY_DATA[0].text[prompt]}
+                    Swipe left to learn more
                   </Text>
-                  {prompt == 0 && (
-                    <Text
-                      style={{
-                        ...styles.prompt,
-                        marginTop: 20,
-                        fontSize: 16,
-                      }}
-                    >
-                      Swipe left to learn more
-                    </Text>
-                  )}
-                </Swipeable>
+                )}
               </View>
-            )}
-            <View style={styles.bottomSection}>
-              <View style={styles.infoWrapper}>
-                <Text style={styles.info}>{DUMMY_DATA[0].info}</Text>
-              </View>
-            </View>
-            {prompt === 4 && (
-              <>
-                <View style={{ position: "absolute", bottom: 100, right: 25 }}>
-                  <Button onPress={() => swipeRightToMatch()} title="Match" />
-                </View>
-                <View style={{ position: "absolute", bottom: 100, left: 25 }}>
-                  <Button
-                    onPress={() => swipeLeftToReject()}
-                    title="Don't Match"
-                  />
-                </View>
-              </>
-            )}
-            <Image
-              blurRadius={40 - prompt * 10}
-              style={styles.image}
-              source={require("../assets/p1.jpg")}
-            />
-          </View>
+            </Draggable>
+          )}
         </View>
-      </Swipeable>
-
+      </View>
       <View style={{ position: "absolute", top: 60, right: 10 }}>
         <Button title="Chat" onPress={() => navigation.navigate("Chat")} />
       </View>
@@ -203,54 +152,27 @@ const HomeScreen = () => {
           onPress={() => navigation.navigate("Profile")}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   wrapper: {
-    flex: 1,
-    justifyContent: "flex-end",
-    alignItems: "center",
+    // alignContent: "center",
+    // justifyContent: "center",
   },
-  cardWrapper: {
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  singleCard: {
-    marginTop: 20,
-    overflow: "hidden",
-    flex: 0.95,
-    width: 390,
-    backgroundColor: "white",
-  },
-  midSection: {
-    paddingHorizontal: 15,
-  },
-  bottomSection: {
-    backgroundColor: "white",
-    paddingHorizontal: 15,
-    paddingVertical: 30,
-  },
+  cardWrapper: {},
+  singleCard: {},
   prompt: {
+    color: "white",
+    fontWeight: "bold",
     fontSize: 20,
-    fontWeight: 500,
+    paddingHorizontal: 20,
   },
-
-  infoWrapper: {
-    display: "flex",
-    alignItems: "flex-start",
-  },
-  info: {
-    fontSize: 20,
-    fontWeight: 500,
-  },
-
   image: {
-    position: "absolute",
+    height: Dimensions.get("window").height + 45,
+    width: Dimensions.get("window").width,
     zIndex: -1,
-    height: "100%",
-    width: "100%",
   },
 });
 
