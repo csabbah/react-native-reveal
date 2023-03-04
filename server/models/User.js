@@ -8,16 +8,88 @@ const userSchema = new Schema(
       required: true,
       unique: true,
     },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      match: [/.+@.+\..+/, "Must use a valid email address"],
-    },
     password: {
       type: String,
       required: true,
     },
+    verified: {
+      phoneNumber: {
+        type: String,
+      },
+      apple: {
+        type: String,
+      },
+    },
+    firstName: {
+      type: String,
+    },
+    dateOfBirth: {
+      type: String,
+    },
+    gender: {
+      type: String,
+    },
+    sexuality: {
+      type: String,
+    },
+    interest: {
+      type: String,
+    },
+    age: {
+      type: String,
+    },
+    height: {
+      type: String,
+    },
+    ethnicity: {
+      type: String,
+    },
+    children: {
+      type: String,
+    },
+    home: {
+      type: String,
+    },
+    job: {
+      location: {
+        type: String,
+      },
+      title: {
+        type: String,
+      },
+    },
+    education: {
+      school: {
+        type: String,
+      },
+      levelAttained: {
+        type: String,
+      },
+    },
+    religiousBelief: {
+      type: String,
+    },
+    politics: {
+      type: String,
+    },
+    drinker: {
+      type: String,
+    },
+    smoker: {
+      type: String,
+    },
+    drugUse: {
+      type: String,
+    },
+    profileImg: {
+      type: String,
+    },
+    prompts: [
+      {
+        question: { type: String },
+        answer: { type: String },
+      },
+    ],
   },
   // set this to use virtual below
   {

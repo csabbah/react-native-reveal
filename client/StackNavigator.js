@@ -8,6 +8,7 @@ import {
   WelcomeScreen,
   OtpScreen,
   ProfileScreen,
+  VerifyPhone,
   TestScreen,
 } from "./screens/Index";
 
@@ -27,6 +28,12 @@ const StackNavigator = () => {
         options={{ headerShown: false }}
         name="Welcome"
         component={WelcomeScreen}
+      />
+      <Stack.Screen
+        // Removes default header styling
+        options={{ headerShown: false }}
+        name="VerifyPhone"
+        component={VerifyPhone}
       />
       <Stack.Screen
         // Removes default header styling

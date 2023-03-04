@@ -6,6 +6,7 @@ import ProfileScreen from "./ProfileScreen";
 import OtpScreen from "./OtpScreen";
 import WelcomeScreen from "./WelcomeScreen";
 import TestScreen from "./TestScreen";
+import VerifyPhone from "./VerifyPhone";
 export {
   ChatScreen,
   HomeScreen,
@@ -14,5 +15,6 @@ export {
   ProfileScreen,
   OtpScreen,
   WelcomeScreen,
+  VerifyPhone,
   TestScreen,
 };
