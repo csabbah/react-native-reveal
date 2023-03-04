@@ -12,14 +12,13 @@ import {
 
 import { useNavigation } from "@react-navigation/core";
 
+import Auth from "../utils/auth";
+
 const App = () => {
   const navigation = useNavigation();
 
   // * --------- -------- -------- -------- ------- -------- ----- SCREEN DIMENSIONS SETUP
-  const { width, height } = Dimensions.get("screen");
-  const thresholdPercentage = 0.5; // adjust this value to change the threshold percentage
-  const leftThreshold = width * thresholdPercentage * -1;
-  const rightThreshold = width * (1 - thresholdPercentage);
+  const { width } = Dimensions.get("screen");
 
   // * --------- -------- -------- -------- ------- -------- ----- PROFILE SETUP
   const DUMMY_DATA = [
@@ -39,10 +38,79 @@ const App = () => {
   const [prevIndicator, setPrevIndicator] = useState(false);
 
   // * --------- -------- -------- -------- ------- -------- ----- DRAGGING COMPONENTS SETUP
+  const thresholdPercentage = 0.3; // adjust this value to change the threshold percentage
+  const leftThreshold = width * thresholdPercentage * -1;
+  const rightThreshold = width * (0.6 - thresholdPercentage);
+
+  const handleIndicators = (gestureState) => {
+    // By setting indicators to true, we visually display where the trigger cues occur
+    if (gestureState.dx < leftThreshold) {
+      return setNextIndicator(true);
+    }
+    // Only go back if the prompt index is not 0
+    // 0 which means we're at the start
+    // 4 means we're the end of the chain which means we're on the profile)
+    if (
+      gestureState.dx > rightThreshold &&
+      (promptIndex.current !== 0 || promptIndex.current == 4)
+    ) {
+      return setPrevIndicator(true);
+    }
+
+    // If neither condition is met, no cues are available so revert to initial state
+    setNextIndicator(false);
+    setPrevIndicator(false);
+  };
+
+  const handleRelease = (gestureState, panToUpdate) => {
+    // Upon drag release, revert indicators to initial state
+    setNextIndicator(false);
+    setPrevIndicator(false);
+
+    // ? ----- ----- ----- ----- THIS HANDLES PROGRESSING TO THE NEXT PROMPTS
+    // If the a certain threshold is crossed when dragging, progress or go back through the prompts
+    if (gestureState.dx < leftThreshold && promptIndex.current !== 4) {
+      // Updating state object MUST look like this, otherwise it doesn't work (Update useState but also include updating useRef)
+      setPrompt((currentVal) => {
+        // NEED to update the useRef here because useState updated value isn't realtime
+        promptIndex.current = currentVal + 1;
+        return currentVal + 1;
+      });
+    }
+
+    // ? ----- ----- ----- ----- THIS HANDLES GOING BACK TO PREVIOUS PROMPTS
+    // 0 which means we're at the start
+    // 4 means we're the end of the chain which means we're on the profile
+    if (
+      gestureState.dx > rightThreshold &&
+      promptIndex.current !== 0 &&
+      promptIndex.current !== 4
+    ) {
+      setPrompt((currentVal) => {
+        promptIndex.current = currentVal - 1;
+        return currentVal - 1;
+      });
+    }
+
+    // ? ----- ----- ----- ----- SAME FUNCTIONALITY AS ABOVE WHEN CROSSING THRESHOLDS, HOWEVER, THESE ARE EXECUTED WHEN ON PROFILE PAGE (AFTER GOING THROUGH ALL PROMPTS)
+    // These will only execute if we're on the profile page (after going through all prompts)
+    if (gestureState.dx < leftThreshold && promptIndex.current == 4) {
+      alert("You Matched!");
+    }
+
+    if (gestureState.dx > rightThreshold && promptIndex.current == 4) {
+      alert("You Reject!");
+    }
+
+    Animated.spring(panToUpdate, {
+      toValue: { x: 0, y: 0 },
+      useNativeDriver: true,
+    }).start();
+  };
+
   // ? ----------------------- Drag a box and upon release, return to initial position
   // Current value of X and Y positions
   const pan = useRef(new Animated.ValueXY()).current;
-
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: () => true,
@@ -59,95 +127,50 @@ const App = () => {
           { useNativeDriver: false }
         )(evt, gestureState);
 
-        // By setting indicators to true, we visually display where the trigger cues occur
-        if (gestureState.dx < leftThreshold) {
-          return setNextIndicator(true);
-        }
-        // Only go back if the prompt index is not 0
-        // 0 which means we're at the start
-        // 4 means we're the end of the chain which means we're on the profile)
-        if (
-          gestureState.dx > rightThreshold &&
-          (promptIndex.current !== 0 || promptIndex.current == 4)
-        ) {
-          return setPrevIndicator(true);
-        }
-
-        setNextIndicator(false);
-        setPrevIndicator(false);
+        // ? ----- ----- ----- ----- THIS HANDLES SETTING INDICATORS WHEN CERTAIN THRESHOLDS ARE CROSSED TO SERVE AS A VISUAL CUE
+        handleIndicators(gestureState);
       },
       // The position UPON release
       onPanResponderRelease: (e, gestureState) => {
-        // Upon drag release, revert indicators to initial state
-        setNextIndicator(false);
-        setPrevIndicator(false);
-
-        // If the a certain threshold is crossed when dragging, progress/go back through the prompts
-        if (gestureState.dx < leftThreshold && promptIndex.current !== 4) {
-          // Updating state object MUST look like this, otherwise it doesn't work
-          setPrompt((currentVal) => {
-            // NEED to update the useRef here because useState updated value isn't realtime
-            promptIndex.current = currentVal + 1;
-            return currentVal + 1;
-          });
-        }
-
-        // 0 which means we're at the start
-        // 4 means we're the end of the chain which means we're on the profile
-        if (
-          gestureState.dx > rightThreshold &&
-          promptIndex.current !== 0 &&
-          promptIndex.current !== 4
-        ) {
-          setPrompt((currentVal) => {
-            promptIndex.current = currentVal - 1;
-            return currentVal - 1;
-          });
-        }
-
-        // These will only execute if we're on the profile page (after going through all prompts)
-        if (gestureState.dx < leftThreshold && promptIndex.current == 4) {
-          alert("You Matched!");
-        }
-
-        if (gestureState.dx > rightThreshold && promptIndex.current == 4) {
-          alert("You Reject!");
-        }
-
-        Animated.spring(pan, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: true,
-        }).start();
+        handleRelease(gestureState, pan);
       },
     })
   ).current;
 
-  // ?----------------------- Move and Drag a box and upon release, stay where it was originally
-  // const pan2 = useRef(new Animated.ValueXY()).current;
+  const pan2 = useRef(new Animated.ValueXY()).current;
+  const panResponder2 = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: () => true,
 
-  // const panResponder2 = useRef(
-  //   PanResponder.create({
-  //     onMoveShouldSetPanResponder: () => true,
-  //     onPanResponderMove: (evt, gestureState) => {
-  //       Animated.event(
-  //         [
-  //           null,
-  //           {
-  //             dx: pan2.x, // x,y are Animated.Value
-  //             dy: pan2.y,
-  //           },
-  //         ],
-  //         { useNativeDriver: false }
-  //       )(evt, gestureState);
-  //       // The active positions
-  //       // console.log(gestureState.moveX);
-  //     },
-  //     onPanResponderRelease: () => {
-  //       // Keeps the same position it had upon release
-  //       pan2.extractOffset();
-  //     },
-  //   })
-  // ).current;
+      onPanResponderMove: (evt, gestureState) => {
+        Animated.event(
+          [
+            null,
+            {
+              dx: pan2.x, // x,y are Animated.Value
+              dy: pan2.y,
+            },
+          ],
+          { useNativeDriver: false }
+        )(evt, gestureState);
+        handleIndicators(gestureState);
+      },
+      // The position UPON release
+      onPanResponderRelease: (evt, gestureState) => {
+        handleRelease(gestureState, pan2);
+      },
+    })
+  ).current;
+
+  useEffect(() => {
+    async function checkToken() {
+      const token = await Auth.getToken();
+      if (!token) {
+        navigation.navigate("SignIn");
+      }
+    }
+    checkToken();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -185,6 +208,7 @@ const App = () => {
         {prompt !== 4 && (
           <Animated.View
             style={{
+              zIndex: 1,
               transform: [{ translateX: pan.x }, { translateY: pan.y }],
             }}
             {...panResponder.panHandlers}
@@ -203,85 +227,86 @@ const App = () => {
                     : "black",
                 }}
               >
-                {DUMMY_DATA[prompt]}
+                {DUMMY_DATA[promptIndex.current]}
               </Text>
             </View>
           </Animated.View>
         )}
-        {prompt !== 4 ? (
-          <Image
-            blurRadius={40 - prompt * 10}
-            style={styles.image}
-            source={require("../assets/p1.jpg")}
-          />
-        ) : (
-          <View>
-            <Animated.View
-              style={{
-                transform: [{ translateX: pan.x }, { translateY: pan.y }],
-              }}
-              {...panResponder.panHandlers}
-            >
-              <Image
-                blurRadius={40 - prompt * 10}
-                style={styles.image}
-                source={require("../assets/p1.jpg")}
-              />
-            </Animated.View>
-            <TouchableHighlight onPress={() => alert("You Matched")}>
-              <View
-                style={{
-                  position: "absolute",
-                  bottom: 80,
-                  right: 40,
-                  height: nextIndicator ? 150 : 100,
-                  width: nextIndicator ? 150 : 100,
-                  borderRadius: 100,
-                  justifyContent: "center",
-                  alignSelf: "center",
-                  backgroundColor: "#3D9970",
-                }}
-              >
-                <Text
+
+        <View>
+          <Animated.View
+            style={{
+              transform: [
+                // Setting this to 0 disabled dragging and ensures we can't move the profile when going through the prompts
+                { translateX: prompt !== 4 ? 0 : pan2.x },
+                { translateY: prompt !== 4 ? 0 : pan2.y },
+              ],
+            }}
+            {...panResponder2.panHandlers}
+          >
+            <Image
+              blurRadius={40 - promptIndex.current * 10}
+              style={styles.image}
+              source={require("../assets/p1.jpg")}
+            />
+          </Animated.View>
+          {prompt == 4 && (
+            <>
+              <TouchableHighlight onPress={() => alert("You Matched")}>
+                <View
                   style={{
-                    fontWeight: 500,
-                    color: "white",
-                    textAlign: "center",
-                    fontSize: 22,
+                    position: "absolute",
+                    bottom: 80,
+                    right: 40,
+                    height: nextIndicator ? 150 : 100,
+                    width: nextIndicator ? 150 : 100,
+                    borderRadius: 100,
+                    justifyContent: "center",
+                    alignSelf: "center",
+                    backgroundColor: "#3D9970",
                   }}
                 >
-                  Match icon
-                </Text>
-              </View>
-            </TouchableHighlight>
-            <TouchableHighlight onPress={() => alert("You Rejected")}>
-              <View
-                style={{
-                  position: "absolute",
-                  bottom: 80,
-                  left: 40,
-                  height: prevIndicator ? 150 : 100,
-                  width: prevIndicator ? 150 : 100,
-                  borderRadius: 100,
-                  justifyContent: "center",
-                  alignSelf: "center",
-                  backgroundColor: "#FF4136",
-                }}
-              >
-                <Text
+                  <Text
+                    style={{
+                      fontWeight: 500,
+                      color: "white",
+                      textAlign: "center",
+                      fontSize: 22,
+                    }}
+                  >
+                    Match icon
+                  </Text>
+                </View>
+              </TouchableHighlight>
+              <TouchableHighlight onPress={() => alert("You Rejected")}>
+                <View
                   style={{
-                    fontWeight: 500,
-                    color: "white",
-                    textAlign: "center",
-                    fontSize: 22,
+                    position: "absolute",
+                    bottom: 80,
+                    left: 40,
+                    height: prevIndicator ? 150 : 100,
+                    width: prevIndicator ? 150 : 100,
+                    borderRadius: 100,
+                    justifyContent: "center",
+                    alignSelf: "center",
+                    backgroundColor: "#FF4136",
                   }}
                 >
-                  Reject icon
-                </Text>
-              </View>
-            </TouchableHighlight>
-          </View>
-        )}
+                  <Text
+                    style={{
+                      fontWeight: 500,
+                      color: "white",
+                      textAlign: "center",
+                      fontSize: 22,
+                    }}
+                  >
+                    Reject icon
+                  </Text>
+                </View>
+              </TouchableHighlight>
+            </>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -311,9 +336,10 @@ const styles = StyleSheet.create({
   },
   singleCard: {
     position: "absolute",
-    top: 300,
+    top: 75,
     width: 350,
-    height: 400,
+    height: 750,
+    backgroundColor: "rgba(0,0,0,0.1)",
     justifyContent: "center",
     alignSelf: "center",
   },
