@@ -1,4 +1,12 @@
-import { View, Text, TouchableOpacity, Button, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Button,
+  Alert,
+  Dimensions,
+  StyleSheet,
+} from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 
 import PhoneInput from "react-native-phone-number-input";
@@ -29,16 +37,8 @@ const MobileVerify = () => {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}
-    >
-      <Text style={{ marginTop: 100, fontSize: 30 }}>
-        Welcome! Can I have your digits?
-      </Text>
+    <View style={styles.wrapper}>
+      <Text style={styles.header}>Welcome! Can I have your digits?</Text>
       <View>
         <Text style={{ fontSize: 20, marginBottom: 10 }}>
           Reveal uses your phone number to authenticate. Please enter our phone
@@ -49,6 +49,9 @@ const MobileVerify = () => {
           defaultValue={value}
           defaultCode="US"
           layout="first"
+          // Style of the country selector box
+          containerStyle={styles.input}
+          textContainerStyle={styles.input}
           onChangeText={(text) => {
             setValue(text);
           }}
@@ -56,7 +59,6 @@ const MobileVerify = () => {
             setFormattedValue(text);
           }}
           countryPickerProps={{ withAlphaFilter: true }}
-          withShadow
         />
         <TouchableOpacity
           onPress={() => {
@@ -71,29 +73,43 @@ const MobileVerify = () => {
             Alert.alert("Invalid Phone");
           }}
         >
-          <View
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              marginTop: 15,
-              width: 312,
-              height: 50,
-              backgroundColor: "#7CDB8A",
-            }}
-          >
+          <View style={styles.continueBtn}>
             <Text style={{ fontSize: 16 }}>Continue</Text>
           </View>
         </TouchableOpacity>
-        <Button
-          title="Already a member?"
-          onPress={() => navigation.navigate("SignIn")}
-        />
+        <View style={{ marginTop: 10 }}>
+          <Button
+            title="Already a member?"
+            onPress={() => navigation.navigate("SignIn")}
+          />
+        </View>
       </View>
       <View></View>
       <View></View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    width: Dimensions.get("screen").width / 2,
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  input: {
+    borderRadius: 10,
+  },
+  header: { width: 300, marginTop: 100, fontSize: 30 },
+  continueBtn: {
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    marginTop: 15,
+    height: 50,
+    backgroundColor: "#7CDB8A",
+    borderRadius: 5,
+  },
+});
 
 export default MobileVerify;

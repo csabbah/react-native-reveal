@@ -23,11 +23,6 @@ const StackNavigator = () => {
         component={TestScreen}
       /> */}
       <Stack.Screen
-        options={{ headerShown: false }}
-        name="Home"
-        component={HomeScreen}
-      />
-      <Stack.Screen
         // Removes default header styling
         options={{ headerShown: false }}
         name="Welcome"
@@ -51,6 +46,11 @@ const StackNavigator = () => {
         }}
         name="Signup"
         component={SignUpScreen}
+      />
+      <Stack.Screen
+        options={{ headerShown: false }}
+        name="Home"
+        component={HomeScreen}
       />
       <Stack.Screen
         options={{
