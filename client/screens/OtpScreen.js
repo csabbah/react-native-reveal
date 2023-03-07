@@ -33,13 +33,17 @@ const OtpScreen = ({ route }) => {
             if (!success) return setInvalidCode(true);
 
             // !! Temporary data passed, need to revise this section
-            const user = {
-              username: "Logged in via Code",
-              email: "c@gmail.com",
-              password: "asdiogn239",
-            };
-            AsyncStorage.setItem("id_token", JSON.stringify(user)).then(() => {
-              navigation.navigate("Home");
+            // const user = {
+            //   username: "Logged in via Code",
+            //   email: "c@gmail.com",
+            //   password: "asdiogn239",
+            // };
+            // AsyncStorage.setItem("id_token", JSON.stringify(user)).then(() => {
+            //   navigation.navigate("Home");
+            // });
+            // Send the data like so:
+            navigation.navigate("ProfileSetup", {
+              data: { phoneNumber, success },
             });
           });
         }}

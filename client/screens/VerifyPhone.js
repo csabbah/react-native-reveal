@@ -2,10 +2,11 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Button,
   Alert,
   Dimensions,
+  KeyboardAvoidingView,
   StyleSheet,
+  Platform,
 } from "react-native";
 import React, { useState, useRef } from "react";
 
@@ -26,52 +27,91 @@ const VerifyPhone = () => {
 
   return (
     <View
-      style={{ height: "100%", alignItems: "center", justifyContent: "center" }}
+      style={{
+        height: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
-      <View style={styles.wrapper}>
-        <Text style={styles.header}>Welcome! Can I have your digits?</Text>
-        <View>
-          <Text style={{ fontSize: 20, marginBottom: 10 }}>
-            Reveal uses your phone number to authenticate. Please enter our
-            phone number:
-          </Text>
-          <PhoneInput
-            ref={phoneInput}
-            defaultValue={value}
-            defaultCode="US"
-            layout="first"
-            // Style of the country selector box
-            containerStyle={styles.input}
-            textContainerStyle={styles.input}
-            onChangeText={(text) => {
-              setValue(text);
-            }}
-            onChangeFormattedText={(text) => {
-              setFormattedValue(text);
-            }}
-            countryPickerProps={{ withAlphaFilter: true }}
-          />
-          <TouchableOpacity
-            onPress={() => {
-              if (isValidPhoneNumber(value)) {
-                return sendSmsVerification(formattedValue).then((sent) => {
-                  navigation.navigate("Otp", {
-                    phoneNumber: formattedValue,
-                  });
-                });
-              }
-              // !! Replace this alert with a prompt
-              Alert.alert("Invalid Phone");
-            }}
-          >
-            <View style={styles.continueBtn}>
-              <Text style={{ fontSize: 16 }}>Continue</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={styles.wrapper}>
+          <View>
+            <Text style={styles.header}>Welcome,</Text>
+            <Text style={{ left: -20, fontSize: 20 }}>
+              Can I have your digits?
+            </Text>
+          </View>
+          <View>
+            <View style={{ marginBottom: 50 }}>
+              <Text style={{ fontSize: 18, marginBottom: 10 }}>
+                Reveal uses your phone number to authenticate.
+              </Text>
+              <Text>Please enter our phone number:</Text>
             </View>
-          </TouchableOpacity>
+            <PhoneInput
+              ref={phoneInput}
+              defaultValue={value}
+              defaultCode="US"
+              withShadow
+              layout="first"
+              // Style of the country selector box
+              containerStyle={styles.input}
+              textContainerStyle={styles.input}
+              onChangeText={(text) => {
+                setValue(text);
+              }}
+              onChangeFormattedText={(text) => {
+                setFormattedValue(text);
+              }}
+              countryPickerProps={{ withAlphaFilter: true }}
+            />
+            <TouchableOpacity
+              onPress={() => {
+                if (isValidPhoneNumber(value)) {
+                  return sendSmsVerification(formattedValue).then((sent) => {
+                    navigation.navigate("Otp", {
+                      phoneNumber: formattedValue,
+                    });
+                  });
+                }
+                // !! Replace this alert with a prompt
+                Alert.alert("Invalid Phone");
+              }}
+            >
+              <View style={styles.continueBtn}>
+                <Text style={{ fontSize: 16 }}>Continue</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("Welcome");
+              }}
+            >
+              <View
+                style={{ ...styles.continueBtn, backgroundColor: "#CCCBDA" }}
+              >
+                <Text style={{ fontSize: 16 }}>Go back</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("ProfileSetup", {
+                  data: { phoneNumber: "645-343-3433", success: "True" },
+                });
+              }}
+            >
+              <View
+                style={{ ...styles.continueBtn, backgroundColor: "#CCCBDA" }}
+              >
+                <Text style={{ fontSize: 16 }}>Bypass (testing)</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View></View>
         </View>
-        <View></View>
-        <View></View>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 };
@@ -79,14 +119,16 @@ const VerifyPhone = () => {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    width: Dimensions.get("screen").width / 2,
+    width: "100%",
+    paddingHorizontal: 20,
     justifyContent: "space-between",
     alignItems: "center",
   },
   input: {
+    width: "100%",
     borderRadius: 10,
   },
-  header: { width: 300, marginTop: 100, fontSize: 30 },
+  header: { width: 300, marginTop: 75, fontSize: 30, left: -20 },
   continueBtn: {
     alignItems: "center",
     justifyContent: "center",

@@ -15,19 +15,34 @@ const userSchema = new Schema(
     verified: {
       phoneNumber: {
         type: String,
+        unique: true,
       },
       apple: {
         type: String,
+        unique: true,
       },
     },
     firstName: {
       type: String,
     },
     dateOfBirth: {
-      type: String,
+      day: {
+        type: String,
+      },
+      month: {
+        type: String,
+      },
+      year: {
+        type: String,
+      },
     },
     gender: {
-      type: String,
+      sex: {
+        type: String,
+      },
+      additionalInfo: {
+        type: String,
+      },
     },
     sexuality: {
       type: String,
@@ -69,7 +84,7 @@ const userSchema = new Schema(
     religiousBelief: {
       type: String,
     },
-    politics: {
+    politicalBelief: {
       type: String,
     },
     drinker: {

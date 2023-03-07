@@ -10,6 +10,7 @@ import {
   ProfileScreen,
   VerifyPhone,
   TestScreen,
+  ProfileSetupScreen,
 } from "./screens/Index";
 
 const Stack = createNativeStackNavigator();
@@ -34,6 +35,12 @@ const StackNavigator = () => {
         options={{ headerShown: false }}
         name="VerifyPhone"
         component={VerifyPhone}
+      />
+      <Stack.Screen
+        // Removes default header styling
+        options={{ headerShown: false }}
+        name="ProfileSetup"
+        component={ProfileSetupScreen}
       />
       <Stack.Screen
         // Removes default header styling

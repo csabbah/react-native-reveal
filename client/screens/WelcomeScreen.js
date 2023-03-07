@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     left: 0,
     height: Dimensions.get("window").height + 45,
     width: Dimensions.get("window").width,
-    opacity: 0.5,
+    opacity: 0.4,
     zIndex: -5,
   },
 });

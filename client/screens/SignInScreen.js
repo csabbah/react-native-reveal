@@ -128,7 +128,7 @@ const SignInScreen = () => {
         )}
         <Button
           title="Phone login"
-          onPress={() => navigation.navigate("Welcome")}
+          onPress={() => navigation.navigate("VerifyPhone")}
         />
       </View>
       <View style={{ marginTop: 30 }}>
