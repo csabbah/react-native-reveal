@@ -11,6 +11,9 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SignInScreen = () => {
+  // !! This code needs an update, you CANNOT login with email and password now
+  // !! Accounts do not have emails or passwords attached to the model
+
   const navigation = useNavigation();
 
   const [formState, setFormState] = useState({
@@ -61,14 +64,20 @@ const SignInScreen = () => {
 
       // If identity token exists, the login was successful
       if (identityToken) {
-        // const decodedToken = jwtDecode(identityToken);
+        alert("Login successful, check log for data");
+        const decodedToken = jwtDecode(identityToken);
+        console.log(
+          "Create a similar function like you did for phone verification",
+          "data:",
+          decodedToken
+        );
         // !! The identityToken reveals information about the users apple account (no username though)
         // !! Need to sign the user (similar to how we do for manual signup) so we can validate token after
-        AsyncStorage.setItem("id_token", JSON.stringify(identityToken)).then(
-          () => {
-            navigation.navigate("Home");
-          }
-        );
+        // AsyncStorage.setItem("id_token", JSON.stringify(identityToken)).then(
+        //   () => {
+        //     navigation.navigate("Home");
+        //   }
+        // );
       }
     } catch (err) {
       console.log(err);

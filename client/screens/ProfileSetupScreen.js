@@ -15,7 +15,13 @@ import React, { useState, useEffect } from "react";
 
 import { useNavigation } from "@react-navigation/core";
 
+import { useMutation } from "@apollo/client";
+import { ADD_USER } from "../utils/mutations";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const ProfileSetup = ({ route }) => {
+  // !! Clean up the form ui, its very messy
+
   // Extract the phone number that was passed from previous screen
   const { phoneNumber, success } = route.params.data;
 
@@ -61,7 +67,7 @@ const ProfileSetup = ({ route }) => {
     "June",
     "July",
     "Aug",
-    "Sept",
+    "Sep",
     "Oct",
     "Nov",
     "Dec",
@@ -81,10 +87,10 @@ const ProfileSetup = ({ route }) => {
   const [formProgress, setFormProgress] = useState(0);
 
   const questions = [
-    {
-      label: ["Enter a username", "Enter a password"],
-      stateLabel: ["username", "password"],
-    },
+    // {
+    //   label: ["Enter a username", "Enter a password"],
+    //   stateLabel: ["username", "password"],
+    // },
     { label: ["What is your first name?"], stateLabel: ["firstName"] },
     {
       isDatePrompt: true,
@@ -98,7 +104,7 @@ const ProfileSetup = ({ route }) => {
         "Optional: Describe more about your gender here",
       ],
       options: ["Male", "Female", "Intersex"],
-      stateLabel: ["sex", "additionalInfo"],
+      stateLabel: ["gender", "additionalGenderInfo"],
     },
     {
       label: ["What is your sexuality?"],
@@ -149,13 +155,13 @@ const ProfileSetup = ({ route }) => {
     },
     {
       label: ["Where do you work?", "What's your job title?"],
-      stateLabel: ["location", "title"],
+      stateLabel: ["jobLocation", "jobTitle"],
     },
     {
       hasBothInputTypes: true,
       label: ["Highest level of education", "Where did you go to school?"],
       options: ["High school", "Undergrad", "Postgrad"],
-      stateLabel: ["levelAttained", "school"],
+      stateLabel: ["educationAttained", "school"],
     },
     {
       label: ["What are your religious beliefs?"],
@@ -191,13 +197,29 @@ const ProfileSetup = ({ route }) => {
   ];
 
   useEffect(() => {
-    if (success) {
-      setUser({ phoneNumber: phoneNumber });
+    phoneNumber && setUser({ ...user, phoneNumber: phoneNumber });
+  }, [phoneNumber]);
+
+  const [addUser, { data, error }] = useMutation(ADD_USER, {
+    onCompleted: (data) => {
+      // If data returned is valid, redirect to home page
+      AsyncStorage.setItem("id_token", data.addUser.token).then(() => {
+        navigation.navigate("Home");
+      });
+    },
+  });
+
+  const handleFormSubmit = () => {
+    try {
+      addUser({
+        variables: { userToSave: user },
+      });
+    } catch (e) {
+      Alert.alert("An error occurred while signing in.");
     }
-  }, [success]);
+  };
 
   console.log(user);
-
   return (
     <View
       style={{
@@ -300,10 +322,10 @@ const ProfileSetup = ({ route }) => {
                         />
                       </View>
                     </>
-                  ) : // {/* If the current data has 'hasBothInputTypes', that means we are rendering an input and a select box */}
+                  ) : // ? If the current data has 'hasBothInputTypes', that means we are rendering an input and a select box
                   questions[formProgress].hasBothInputTypes ? (
                     <>
-                      {/* For the first one, render a regular text input. The second is always the select input */}
+                      {/* // ? For the first one, render a regular text input. The second is always the select input */}
                       {i != 0 ? (
                         <TextInput
                           style={{ ...styles.textInput, marginBottom: 10 }}
@@ -343,7 +365,7 @@ const ProfileSetup = ({ route }) => {
                         />
                       )}
                     </>
-                  ) : // If it doesn't have both input types but it has options, that means it is meant to be a select input
+                  ) : // ? If it doesn't have both input types but it has options, that means it is meant to be a select input
                   questions[formProgress].options ? (
                     <>
                       <SelectDropdown
@@ -384,14 +406,14 @@ const ProfileSetup = ({ route }) => {
                       style={{ ...styles.textInput, marginBottom: 10 }}
                       fontSize={28}
                       placeholder={prompt}
-                      onChangeText={(text) =>
+                      onChangeText={(text) => {
                         setUser({
                           ...user,
                           [questions[formProgress].stateLabel[
                             getIndexOfLabel(prompt)
                           ]]: text,
-                        })
-                      }
+                        });
+                      }}
                       defaultValue={
                         user[questions[formProgress].stateLabel[i]] &&
                         user[questions[formProgress].stateLabel[i]]
@@ -412,7 +434,7 @@ const ProfileSetup = ({ route }) => {
             <TouchableOpacity
               onPress={() =>
                 formProgress == questions.length - 1
-                  ? alert("You've reached the end!")
+                  ? handleFormSubmit()
                   : setFormProgress(formProgress + 1)
               }
             >

@@ -16,13 +16,18 @@ const WelcomeScreen = () => {
   useEffect(() => {
     async function checkToken() {
       const token = await Auth.getToken();
+
+      // If token exists...
       if (token) {
-        navigation.navigate("Home");
+        // Check and validate the data
+        const profile = await Auth.getProfile(token);
+        if (profile.data && profile.data._id) {
+          navigation.navigate("Home");
+        }
       }
     }
     checkToken();
   }, []);
-
   return (
     <View
       style={{

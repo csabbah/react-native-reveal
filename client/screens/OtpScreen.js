@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { SafeAreaView, StyleSheet, Button, Text } from "react-native";
+import { SafeAreaView, StyleSheet, Button, Text, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/core";
 
 import { checkVerification } from "../api/verify";
@@ -7,11 +7,41 @@ import OTPInputView from "@twotalltotems/react-native-otp-input";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { useMutation } from "@apollo/client";
+import { LOGIN_USER_PHONE } from "../utils/mutations";
+
 const OtpScreen = ({ route }) => {
   const navigation = useNavigation();
 
   const { phoneNumber } = route.params;
   const [invalidCode, setInvalidCode] = useState(false);
+
+  const [loginPhone, { data, error }] = useMutation(LOGIN_USER_PHONE, {
+    onCompleted: (data) => {
+      // If data exists, that means account exists with verified number
+      AsyncStorage.setItem("id_token", data.loginPhone.token).then(() => {
+        navigation.navigate("Home");
+      });
+    },
+    // onError means no account was found based on inputted number
+    onError: () => {
+      navigation.navigate("ProfileSetup", {
+        data: { phoneNumber },
+      });
+    },
+  });
+
+  const handleFormSubmit = () => {
+    try {
+      loginPhone({
+        variables: { phoneNumber: phoneNumber },
+      });
+    } catch (e) {
+      console.log(e);
+      Alert.alert("An error occurred while logging in.");
+    }
+  };
+
   return (
     <SafeAreaView style={styles.wrapper}>
       <Text style={styles.prompt}>Enter the code we sent you</Text>
@@ -31,20 +61,10 @@ const OtpScreen = ({ route }) => {
         onCodeFilled={(code) => {
           checkVerification(phoneNumber, code).then((success) => {
             if (!success) return setInvalidCode(true);
-
-            // !! Temporary data passed, need to revise this section
-            // const user = {
-            //   username: "Logged in via Code",
-            //   email: "c@gmail.com",
-            //   password: "asdiogn239",
-            // };
-            // AsyncStorage.setItem("id_token", JSON.stringify(user)).then(() => {
-            //   navigation.navigate("Home");
-            // });
-            // Send the data like so:
-            navigation.navigate("ProfileSetup", {
-              data: { phoneNumber, success },
-            });
+            // Upon verification of phone, check the phone number against the data in DB
+            // If account exists, login and load up the main application
+            // If account doesn't exist, direct users to the 'profileCreation' page while also attaching the number they used/verified (to be posted to the account)
+            handleFormSubmit();
           });
         }}
       />

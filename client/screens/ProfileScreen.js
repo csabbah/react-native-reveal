@@ -4,18 +4,13 @@ import React, { useEffect } from "react";
 import Auth from "../utils/auth";
 import { useNavigation } from "@react-navigation/core";
 
+import { useQuery } from "@apollo/client";
+import { GET_ME } from "../utils/queries";
+
 const ProfileScreen = () => {
   const navigation = useNavigation();
-
-  useEffect(() => {
-    async function checkToken() {
-      const token = await Auth.getToken();
-      if (!token) {
-        navigation.navigate("SignIn");
-      }
-    }
-    checkToken();
-  }, []);
+  var userData = useQuery(GET_ME);
+  var user = userData.data || [];
 
   const logout = async () => {
     try {
@@ -38,7 +33,18 @@ const ProfileScreen = () => {
       <View style={{ position: "absolute", top: 100 }}>
         <Button title="Home page" onPress={() => navigation.navigate("Home")} />
       </View>
-      <Text>Your account:</Text>
+      <View>
+        <Text>Your account:</Text>
+        <Text>Name: {user.me?.firstName}</Text>
+        <Text>Gender: {user.me?.gender}</Text>
+        <Text>Additional Gender info: {user.me?.additionalGenderInfo}</Text>
+        <Text>Sexuality: {user.me?.sexuality}</Text>
+        <Text>Interest: {user.me?.interest}</Text>
+        <Text>
+          Birthday: {user.me?.dateOfBirth.month} {user.me?.dateOfBirth.day}{" "}
+          {user.me?.dateOfBirth.year}
+        </Text>
+      </View>
       <Button title="Sign out" onPress={logout} />
     </View>
   );

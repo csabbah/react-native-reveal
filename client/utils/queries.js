@@ -4,9 +4,31 @@ export const GET_ME = gql`
   {
     me {
       _id
-      username
-      bookCount
-      email
+      firstName
+      phoneNumber
+      dateOfBirth {
+        year
+        month
+        day
+      }
+      gender
+      additionalGenderInfo
+      sexuality
+      interest
+      age
+      height
+      ethnicity
+      children
+      home
+      jobLocation
+      jobTitle
+      school
+      educationAttained
+      religiousBelief
+      politicalBelief
+      drinker
+      smoker
+      drugUse
     }
   }
 `;

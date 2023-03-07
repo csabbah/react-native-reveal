@@ -165,8 +165,9 @@ const App = () => {
   useEffect(() => {
     async function checkToken() {
       const token = await Auth.getToken();
-      if (!token) {
-        navigation.navigate("SignIn");
+      const profile = await Auth.getProfile(token);
+      if (!profile?.data._id || !token) {
+        navigation.navigate("Welcome");
       }
     }
     checkToken();

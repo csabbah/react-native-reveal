@@ -3,46 +3,32 @@ const bcrypt = require("bcrypt");
 
 const userSchema = new Schema(
   {
-    username: {
+    phoneNumber: {
       type: String,
-      required: true,
       unique: true,
     },
-    password: {
+    apple: {
       type: String,
-      required: true,
-    },
-    verified: {
-      phoneNumber: {
-        type: String,
-        unique: true,
-      },
-      apple: {
-        type: String,
-        unique: true,
-      },
     },
     firstName: {
       type: String,
     },
     dateOfBirth: {
       day: {
-        type: String,
+        type: Number,
       },
       month: {
         type: String,
       },
       year: {
-        type: String,
+        type: Number,
       },
     },
     gender: {
-      sex: {
-        type: String,
-      },
-      additionalInfo: {
-        type: String,
-      },
+      type: String,
+    },
+    additionalGenderInfo: {
+      type: String,
     },
     sexuality: {
       type: String,
@@ -65,21 +51,17 @@ const userSchema = new Schema(
     home: {
       type: String,
     },
-    job: {
-      location: {
-        type: String,
-      },
-      title: {
-        type: String,
-      },
+    jobLocation: {
+      type: String,
     },
-    education: {
-      school: {
-        type: String,
-      },
-      levelAttained: {
-        type: String,
-      },
+    jobTitle: {
+      type: String,
+    },
+    school: {
+      type: String,
+    },
+    educationAttained: {
+      type: String,
     },
     religiousBelief: {
       type: String,
@@ -114,20 +96,19 @@ const userSchema = new Schema(
   }
 );
 
-// hash user password
-userSchema.pre("save", async function (next) {
-  if (this.isNew || this.isModified("password")) {
-    const saltRounds = 10;
-    this.password = await bcrypt.hash(this.password, saltRounds);
-  }
+// // hash user phoneNumber
+// userSchema.pre("save", async function (next) {
+//   if (this.isNew || this.isModified("phoneNumber")) {
+//     const saltRounds = 10;
+//     this.phoneNumber = await bcrypt.hash(this.phoneNumber, saltRounds);
+//   }
 
-  next();
-});
-
-// custom method to compare and validate password for logging in
-userSchema.methods.isCorrectPassword = async function (password) {
-  return bcrypt.compare(password, this.password);
-};
+//   next();
+// });
+// // custom method to compare and validate phoneNumber for logging in
+// userSchema.methods.isCorrectNumber = async function (phoneNumber) {
+//   return bcrypt.compare(phoneNumber, this.phoneNumber);
+// };
 
 const User = model("User", userSchema);
 
