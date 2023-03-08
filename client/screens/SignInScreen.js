@@ -3,7 +3,7 @@ import { View, Text, TextInput, Button, Alert, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/core";
 
 import { useMutation } from "@apollo/client";
-import { LOGIN_USER } from "../utils/mutations";
+import { LOGIN_USER_EMAIL } from "../utils/mutations";
 
 // run this in terminal 'expo install expo-apple-authentication'
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -11,9 +11,6 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SignInScreen = () => {
-  // !! This code needs an update, you CANNOT login with email and password now
-  // !! Accounts do not have emails or passwords attached to the model
-
   const navigation = useNavigation();
 
   const [formState, setFormState] = useState({
@@ -21,9 +18,9 @@ const SignInScreen = () => {
     password: "",
   });
 
-  const [login, { data, error }] = useMutation(LOGIN_USER, {
+  const [loginEmail, { data, error }] = useMutation(LOGIN_USER_EMAIL, {
     onCompleted: (data) => {
-      AsyncStorage.setItem("id_token", data.login.token).then(() => {
+      AsyncStorage.setItem("id_token", data.loginEmail.token).then(() => {
         navigation.navigate("Home");
       });
     },
@@ -44,7 +41,7 @@ const SignInScreen = () => {
     }
 
     try {
-      login({
+      loginEmail({
         variables: { ...formState },
       });
     } catch (e) {
@@ -142,8 +139,8 @@ const SignInScreen = () => {
       </View>
       <View style={{ marginTop: 30 }}>
         <Button
-          title="Sign up manually"
-          onPress={() => navigation.navigate("Signup")}
+          title="Go back"
+          onPress={() => navigation.navigate("Welcome")}
         />
       </View>
     </View>

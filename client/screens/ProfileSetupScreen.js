@@ -87,10 +87,10 @@ const ProfileSetup = ({ route }) => {
   const [formProgress, setFormProgress] = useState(0);
 
   const questions = [
-    // {
-    //   label: ["Enter a username", "Enter a password"],
-    //   stateLabel: ["username", "password"],
-    // },
+    {
+      label: ["Enter an email", "Enter a password"],
+      stateLabel: ["email", "password"],
+    },
     { label: ["What is your first name?"], stateLabel: ["firstName"] },
     {
       isDatePrompt: true,
@@ -241,6 +241,9 @@ const ProfileSetup = ({ route }) => {
             {questions[formProgress].label.map((prompt, i) => {
               return (
                 <View key={i}>
+                  {formProgress == 0 && i == 0 && (
+                    <Text>Secure your account. (Optional)</Text>
+                  )}
                   <Text style={styles.inputHeader}>
                     {questions[formProgress].label[i]}
                   </Text>

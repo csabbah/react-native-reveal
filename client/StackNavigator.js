@@ -3,7 +3,6 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import {
   HomeScreen,
   ChatScreen,
-  SignUpScreen,
   SignInScreen,
   WelcomeScreen,
   OtpScreen,
@@ -52,14 +51,6 @@ const StackNavigator = () => {
         options={{ headerShown: false }}
         name="Otp"
         component={OtpScreen}
-      />
-      <Stack.Screen
-        options={{
-          headerShown: false,
-          animation: "slide_from_left",
-        }}
-        name="Signup"
-        component={SignUpScreen}
       />
       <Stack.Screen
         options={{ headerShown: false }}

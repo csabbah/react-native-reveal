@@ -1,16 +1,28 @@
 import { View, Text, Button } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import Auth from "../utils/auth";
 import { useNavigation } from "@react-navigation/core";
 
 import { useQuery } from "@apollo/client";
-import { GET_ME } from "../utils/queries";
+import { GET_USER } from "../utils/queries";
 
 const ProfileScreen = () => {
+  const [userId, setUserId] = useState("");
+
+  const checkAcc = async () => {
+    const token = await Auth.getToken();
+    const profileId = await Auth.getProfile(token).data._id;
+    setUserId(profileId);
+  };
+
   const navigation = useNavigation();
-  var userData = useQuery(GET_ME, {
+
+  var userData = useQuery(GET_USER, {
+    // This property and the 'network-only' value ensures it always fetches the latest data from the apollo server.
+    // In short, it ensures if you attempt to login again during the same session that the data is unique based on the account
     fetchPolicy: "network-only",
+    variables: { id: userId },
   });
   var user = userData.data || [];
 
@@ -23,6 +35,18 @@ const ProfileScreen = () => {
       console.error(e);
     }
   };
+
+  useEffect(() => {
+    checkAcc();
+
+    if (!user) {
+      logout();
+    }
+  }, [userId, user]);
+
+  if (!user) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
     <View
@@ -37,14 +61,17 @@ const ProfileScreen = () => {
       </View>
       <View>
         <Text>Your account:</Text>
-        <Text>Name: {user?.me?.firstName}</Text>
-        <Text>Gender: {user?.me?.gender}</Text>
-        <Text>Additional Gender info: {user?.me?.additionalGenderInfo}</Text>
-        <Text>Sexuality: {user?.me?.sexuality}</Text>
-        <Text>Interest: {user?.me?.interest}</Text>
+        <Text>Name: {user && user?.user?.firstName}</Text>
+        <Text>Gender: {user && user?.user?.gender}</Text>
         <Text>
-          Birthday: {user?.me?.dateOfBirth.month} {user?.me?.dateOfBirth.day}{" "}
-          {user?.me?.dateOfBirth.year}
+          Additional Gender info: {user && user?.user?.additionalGenderInfo}
+        </Text>
+        <Text>Sexuality: {user && user?.user?.sexuality}</Text>
+        <Text>Interest: {user && user?.user?.interest}</Text>
+        <Text>
+          Birthday: {user && user?.user?.dateOfBirth.month}{" "}
+          {user && user?.user?.dateOfBirth.day}{" "}
+          {user && user?.user?.dateOfBirth.year}
         </Text>
       </View>
       <Button title="Sign out" onPress={logout} />

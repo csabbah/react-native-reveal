@@ -1,6 +1,5 @@
 import ChatScreen from "./ChatScreen";
 import HomeScreen from "./HomeScreen";
-import SignUpScreen from "./SignUpScreen";
 import SignInScreen from "./SignInScreen";
 import ProfileSetupScreen from "./ProfileSetupScreen";
 import ProfileScreen from "./ProfileScreen";
@@ -12,7 +11,6 @@ import VerifyPhone from "./VerifyPhone";
 export {
   ChatScreen,
   HomeScreen,
-  SignUpScreen,
   SignInScreen,
   ProfileScreen,
   OtpScreen,

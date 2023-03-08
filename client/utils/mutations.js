@@ -6,18 +6,17 @@ export const LOGIN_USER_PHONE = gql`
       token
       user {
         _id
-        firstName
       }
     }
   }
 `;
-export const LOGIN_USER = gql`
-  mutation login($email: String!, $password: String!) {
-    login(email: $email, password: $password) {
+
+export const LOGIN_USER_EMAIL = gql`
+  mutation loginEmail($email: String!, $password: String!) {
+    loginEmail(email: $email, password: $password) {
       token
       user {
         _id
-        firstName
       }
     }
   }

@@ -95,19 +95,6 @@ const VerifyPhone = () => {
                 <Text style={{ fontSize: 16 }}>Go back</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate("ProfileSetup", {
-                  data: { phoneNumber: "645-343-3433", success: "True" },
-                });
-              }}
-            >
-              <View
-                style={{ ...styles.continueBtn, backgroundColor: "#CCCBDA" }}
-              >
-                <Text style={{ fontSize: 16 }}>Bypass (testing)</Text>
-              </View>
-            </TouchableOpacity>
           </View>
           <View></View>
         </View>

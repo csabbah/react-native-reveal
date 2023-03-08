@@ -8,9 +8,10 @@ const PHONE_NUMBER_SALT = "my-secret-salt";
 
 const resolvers = {
   Query: {
-    me: async (parent, args, context) => {
-      if (context.user) {
-        const userData = await User.findOne({ _id: context.user._id });
+    user: async (parent, { _id }) => {
+      console.log(_id);
+      if (_id) {
+        const userData = await User.findOne({ _id: _id });
         return userData;
       }
 
@@ -28,22 +29,23 @@ const resolvers = {
     },
   },
   Mutation: {
-    // login: async (parent, { email, password }) => {
-    //   const user = await User.findOne({ email });
+    loginEmail: async (parent, { email, password }) => {
+      console.log(email);
+      const user = await User.findOne({ email });
 
-    //   if (!user) {
-    //     throw new AuthenticationError("Incorrect credentials");
-    //   }
+      if (!user) {
+        throw new AuthenticationError("Incorrect credentials");
+      }
 
-    //   const correctPw = await user.isCorrectPassword(password);
+      const correctPw = await user.isCorrectPassword(password);
 
-    //   if (!correctPw) {
-    //     throw new AuthenticationError("Incorrect credentials");
-    //   }
+      if (!correctPw) {
+        throw new AuthenticationError("Incorrect Password");
+      }
 
-    //   const token = signToken(user);
-    //   return { token, user };
-    // },
+      const token = signToken(user);
+      return { token, user };
+    },
 
     loginPhone: async (parent, { phoneNumber }) => {
       // ! IMPORTANT NOTE WHEN DEBUGGING (IN GRAPHQL VS. ON A PHYSICAL DEVICE)
