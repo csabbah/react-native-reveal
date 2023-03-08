@@ -88,8 +88,8 @@ const ProfileSetup = ({ route }) => {
 
   const questions = [
     {
-      label: ["Enter an email", "Enter a password"],
-      stateLabel: ["email", "password"],
+      label: ["Enter an email", "Enter a password", "Apple"],
+      stateLabel: ["email", "password", "apple"],
     },
     { label: ["What is your first name?"], stateLabel: ["firstName"] },
     {

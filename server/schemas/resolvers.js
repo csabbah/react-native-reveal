@@ -9,7 +9,6 @@ const PHONE_NUMBER_SALT = "my-secret-salt";
 const resolvers = {
   Query: {
     user: async (parent, { _id }) => {
-      console.log(_id);
       if (_id) {
         const userData = await User.findOne({ _id: _id });
         return userData;
@@ -30,7 +29,6 @@ const resolvers = {
   },
   Mutation: {
     loginEmail: async (parent, { email, password }) => {
-      console.log(email);
       const user = await User.findOne({ email });
 
       if (!user) {

@@ -13,18 +13,20 @@ const ProfileScreen = () => {
   const checkAcc = async () => {
     const token = await Auth.getToken();
     const profileId = await Auth.getProfile(token).data._id;
+
     setUserId(profileId);
   };
 
   const navigation = useNavigation();
 
-  var userData = useQuery(GET_USER, {
+  const { loading, error, data } = useQuery(GET_USER, {
     // This property and the 'network-only' value ensures it always fetches the latest data from the apollo server.
     // In short, it ensures if you attempt to login again during the same session that the data is unique based on the account
     fetchPolicy: "network-only",
     variables: { id: userId },
   });
-  var user = userData.data || [];
+
+  const user = data?.user;
 
   const logout = async () => {
     try {
@@ -39,12 +41,12 @@ const ProfileScreen = () => {
   useEffect(() => {
     checkAcc();
 
-    if (!user) {
+    if (user === null || error) {
       logout();
     }
-  }, [userId, user]);
+  }, [user, error]);
 
-  if (!user) {
+  if (loading) {
     return <Text>Loading...</Text>;
   }
 
@@ -61,17 +63,16 @@ const ProfileScreen = () => {
       </View>
       <View>
         <Text>Your account:</Text>
-        <Text>Name: {user && user?.user?.firstName}</Text>
-        <Text>Gender: {user && user?.user?.gender}</Text>
+        <Text>Name: {user && user?.firstName}</Text>
+        <Text>Gender: {user && user?.gender}</Text>
         <Text>
-          Additional Gender info: {user && user?.user?.additionalGenderInfo}
+          Additional Gender info: {user && user?.additionalGenderInfo}
         </Text>
-        <Text>Sexuality: {user && user?.user?.sexuality}</Text>
-        <Text>Interest: {user && user?.user?.interest}</Text>
+        <Text>Sexuality: {user && user?.sexuality}</Text>
+        <Text>Interest: {user && user?.interest}</Text>
         <Text>
-          Birthday: {user && user?.user?.dateOfBirth.month}{" "}
-          {user && user?.user?.dateOfBirth.day}{" "}
-          {user && user?.user?.dateOfBirth.year}
+          Birthday: {user && user?.dateOfBirth.month}{" "}
+          {user && user?.dateOfBirth.day} {user && user?.dateOfBirth.year}
         </Text>
       </View>
       <Button title="Sign out" onPress={logout} />
