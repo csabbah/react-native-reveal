@@ -9,7 +9,9 @@ import { GET_ME } from "../utils/queries";
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
-  var userData = useQuery(GET_ME);
+  var userData = useQuery(GET_ME, {
+    fetchPolicy: "network-only",
+  });
   var user = userData.data || [];
 
   const logout = async () => {

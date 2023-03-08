@@ -4,6 +4,8 @@ const { AuthenticationError } = require("apollo-server-express");
 const { signToken } = require("../utils/auth");
 const crypto = require("crypto");
 
+const PHONE_NUMBER_SALT = "my-secret-salt";
+
 const resolvers = {
   Query: {
     me: async (parent, args, context) => {
@@ -44,10 +46,13 @@ const resolvers = {
     // },
 
     loginPhone: async (parent, { phoneNumber }) => {
+      // ! IMPORTANT NOTE WHEN DEBUGGING (IN GRAPHQL VS. ON A PHYSICAL DEVICE)
+      // ! MAKE SURE TO ADD THE CORRESPONDING AREA CODE (I.E. '+1') TO THE PHONE NUMBER
+
       // Hash the phone number input
       const hashedPhoneNumber = crypto
         .createHash("sha256")
-        .update(phoneNumber)
+        .update(`${PHONE_NUMBER_SALT}-${phoneNumber}`)
         .digest("hex");
 
       // Find the user with the hashed phone number
@@ -60,11 +65,12 @@ const resolvers = {
       const token = signToken(user);
       return { token, user };
     },
+
     addUser: async (parent, { userToSave }) => {
       // Hash the phone number
       const hashedPhoneNumber = crypto
         .createHash("sha256")
-        .update(userToSave.phoneNumber)
+        .update(`${PHONE_NUMBER_SALT}-${userToSave.phoneNumber}`)
         .digest("hex");
 
       // Save the user with the hashed phone number
