@@ -2,6 +2,7 @@ const { User } = require("../models");
 
 const { AuthenticationError } = require("apollo-server-express");
 const { signToken } = require("../utils/auth");
+const crypto = require("crypto");
 
 const resolvers = {
   Query: {
@@ -43,7 +44,14 @@ const resolvers = {
     // },
 
     loginPhone: async (parent, { phoneNumber }) => {
-      const user = await User.findOne({ phoneNumber });
+      // Hash the phone number input
+      const hashedPhoneNumber = crypto
+        .createHash("sha256")
+        .update(phoneNumber)
+        .digest("hex");
+
+      // Find the user with the hashed phone number
+      const user = await User.findOne({ phoneNumber: hashedPhoneNumber });
 
       if (!user) {
         throw new AuthenticationError("Account doesn't exist");
@@ -53,9 +61,20 @@ const resolvers = {
       return { token, user };
     },
     addUser: async (parent, { userToSave }) => {
-      const user = await User.create(userToSave);
-      const token = signToken(user);
+      // Hash the phone number
+      const hashedPhoneNumber = crypto
+        .createHash("sha256")
+        .update(userToSave.phoneNumber)
+        .digest("hex");
 
+      // Save the user with the hashed phone number
+      const user = await User.create({
+        ...userToSave,
+        phoneNumber: hashedPhoneNumber,
+      });
+
+      // Generate token and return user and token
+      const token = signToken(user);
       return { token, user };
     },
   },

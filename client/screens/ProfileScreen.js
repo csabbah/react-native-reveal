@@ -35,14 +35,14 @@ const ProfileScreen = () => {
       </View>
       <View>
         <Text>Your account:</Text>
-        <Text>Name: {user.me?.firstName}</Text>
-        <Text>Gender: {user.me?.gender}</Text>
-        <Text>Additional Gender info: {user.me?.additionalGenderInfo}</Text>
-        <Text>Sexuality: {user.me?.sexuality}</Text>
-        <Text>Interest: {user.me?.interest}</Text>
+        <Text>Name: {user?.me?.firstName}</Text>
+        <Text>Gender: {user?.me?.gender}</Text>
+        <Text>Additional Gender info: {user?.me?.additionalGenderInfo}</Text>
+        <Text>Sexuality: {user?.me?.sexuality}</Text>
+        <Text>Interest: {user?.me?.interest}</Text>
         <Text>
-          Birthday: {user.me?.dateOfBirth.month} {user.me?.dateOfBirth.day}{" "}
-          {user.me?.dateOfBirth.year}
+          Birthday: {user?.me?.dateOfBirth.month} {user?.me?.dateOfBirth.day}{" "}
+          {user?.me?.dateOfBirth.year}
         </Text>
       </View>
       <Button title="Sign out" onPress={logout} />

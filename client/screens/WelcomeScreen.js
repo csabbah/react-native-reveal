@@ -16,7 +16,6 @@ const WelcomeScreen = () => {
   useEffect(() => {
     async function checkToken() {
       const token = await Auth.getToken();
-
       // If token exists...
       if (token) {
         // Check and validate the data
