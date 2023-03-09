@@ -28,6 +28,17 @@ const resolvers = {
     },
   },
   Mutation: {
+    loginApple: async (parent, { sub }) => {
+      const user = await User.findOne({ apple: sub });
+
+      if (!user) {
+        throw new AuthenticationError("Incorrect credentials");
+      }
+
+      const token = signToken(user);
+      return { token, user };
+    },
+
     loginEmail: async (parent, { email, password }) => {
       const user = await User.findOne({ email });
 

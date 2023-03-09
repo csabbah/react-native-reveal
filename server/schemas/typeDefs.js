@@ -74,6 +74,7 @@ const typeDefs = gql`
   }
 
   type Mutation {
+    loginApple(sub: String!): Auth
     loginPhone(phoneNumber: String!): Auth
     loginEmail(email: String!, password: String!): Auth
     addUser(userToSave: addUserInput): Auth

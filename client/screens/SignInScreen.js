@@ -3,10 +3,11 @@ import { View, Text, TextInput, Button, Alert, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/core";
 
 import { useMutation } from "@apollo/client";
-import { LOGIN_USER_EMAIL } from "../utils/mutations";
+import { LOGIN_USER_EMAIL, LOGIN_USER_APPLE } from "../utils/mutations";
 
 // run this in terminal 'expo install expo-apple-authentication'
 import * as AppleAuthentication from "expo-apple-authentication";
+import jwtDecode from "jwt-decode";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -18,16 +19,29 @@ const SignInScreen = () => {
     password: "",
   });
 
-  const [loginEmail, { data, error }] = useMutation(LOGIN_USER_EMAIL, {
-    onCompleted: (data) => {
-      AsyncStorage.setItem("id_token", data.loginEmail.token).then(() => {
-        navigation.navigate("Home");
-      });
-    },
-    onError: () => {
-      Alert.alert("Incorrect Credentials");
-    },
-  });
+  const [loginEmail, { data: loginEmailData, error: loginEmailError }] =
+    useMutation(LOGIN_USER_EMAIL, {
+      onCompleted: (data) => {
+        AsyncStorage.setItem("id_token", data.loginEmail.token).then(() => {
+          navigation.navigate("Home");
+        });
+      },
+      onError: () => {
+        Alert.alert("Incorrect Credentials");
+      },
+    });
+
+  const [loginApple, { data: loginAppleData, error: loginAppleError }] =
+    useMutation(LOGIN_USER_APPLE, {
+      onCompleted: (data) => {
+        AsyncStorage.setItem("id_token", data.loginApple.token).then(() => {
+          navigation.navigate("Home");
+        });
+      },
+      onError: () => {
+        Alert.alert("Incorrect Credentials");
+      },
+    });
 
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -50,6 +64,17 @@ const SignInScreen = () => {
     }
   };
 
+  const handleAppleSubmit = (sub) => {
+    try {
+      loginApple({
+        variables: { sub: sub },
+      });
+    } catch (e) {
+      console.log(e);
+      Alert.alert("An error occurred while logging in.");
+    }
+  };
+
   const appleLoginOrRegister = async () => {
     try {
       const { identityToken } = await AppleAuthentication.signInAsync({
@@ -61,20 +86,11 @@ const SignInScreen = () => {
 
       // If identity token exists, the login was successful
       if (identityToken) {
-        alert("Login successful, check log for data");
         const decodedToken = jwtDecode(identityToken);
-        console.log(
-          "Create a similar function like you did for phone verification",
-          "data:",
-          decodedToken
-        );
-        // !! The identityToken reveals information about the users apple account (no username though)
-        // !! Need to sign the user (similar to how we do for manual signup) so we can validate token after
-        // AsyncStorage.setItem("id_token", JSON.stringify(identityToken)).then(
-        //   () => {
-        //     navigation.navigate("Home");
-        //   }
-        // );
+        // decodedToken.sub is the data we passed when we created the account
+        // the sub property is a unique identifier (that is always consistent when using apple login)
+        const sub = decodedToken.sub;
+        handleAppleSubmit(sub);
       }
     } catch (err) {
       console.log(err);

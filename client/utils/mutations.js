@@ -22,6 +22,17 @@ export const LOGIN_USER_EMAIL = gql`
   }
 `;
 
+export const LOGIN_USER_APPLE = gql`
+  mutation loginApple($sub: String!) {
+    loginApple(sub: $sub) {
+      token
+      user {
+        _id
+      }
+    }
+  }
+`;
+
 export const ADD_USER = gql`
   mutation addUser($userToSave: addUserInput) {
     addUser(userToSave: $userToSave) {

@@ -19,8 +19,13 @@ import { useMutation } from "@apollo/client";
 import { ADD_USER } from "../utils/mutations";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import * as AppleAuthentication from "expo-apple-authentication";
+import jwtDecode from "jwt-decode";
+
 const ProfileSetup = ({ route }) => {
   // !! Clean up the form ui, its very messy
+
+  const [appleVerified, setAppleVerified] = useState(false);
 
   // Extract the phone number that was passed from previous screen
   const { phoneNumber, success } = route.params.data;
@@ -219,6 +224,28 @@ const ProfileSetup = ({ route }) => {
     }
   };
 
+  const appleLoginOrRegister = async () => {
+    try {
+      const { identityToken } = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        ],
+      });
+
+      // If identity token exists, the login was successful
+      if (identityToken) {
+        const decodedToken = jwtDecode(identityToken);
+        setAppleVerified(true);
+        // Pass the sub property because it is a unique ID that is specific to this application and the user's apple ID
+        // the Sub property will remain consistent even if user decides not to share their data
+        setUser({ ...user, apple: decodedToken.sub });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   console.log(user);
   return (
     <View
@@ -404,24 +431,37 @@ const ProfileSetup = ({ route }) => {
                       />
                     </>
                   ) : (
-                    // If it doesn't have both input types and doesn't have options, that means its just a regular input field
-                    <TextInput
-                      style={{ ...styles.textInput, marginBottom: 10 }}
-                      fontSize={28}
-                      placeholder={prompt}
-                      onChangeText={(text) => {
-                        setUser({
-                          ...user,
-                          [questions[formProgress].stateLabel[
-                            getIndexOfLabel(prompt)
-                          ]]: text,
-                        });
-                      }}
-                      defaultValue={
-                        user[questions[formProgress].stateLabel[i]] &&
-                        user[questions[formProgress].stateLabel[i]]
-                      }
-                    />
+                    <>
+                      {/* // ? If it doesn't have both input types and doesn't have options, that means its just a regular input field */}
+                      {Platform.OS === "ios" && prompt == "Apple" ? (
+                        Platform.OS === "ios" && !appleVerified ? (
+                          <Button
+                            onPress={appleLoginOrRegister}
+                            title="Secure with Apple"
+                          />
+                        ) : (
+                          <Text>Apple Secured</Text>
+                        )
+                      ) : (
+                        <TextInput
+                          style={{ ...styles.textInput, marginBottom: 10 }}
+                          fontSize={28}
+                          placeholder={prompt}
+                          onChangeText={(text) => {
+                            setUser({
+                              ...user,
+                              [questions[formProgress].stateLabel[
+                                getIndexOfLabel(prompt)
+                              ]]: text,
+                            });
+                          }}
+                          defaultValue={
+                            user[questions[formProgress].stateLabel[i]] &&
+                            user[questions[formProgress].stateLabel[i]]
+                          }
+                        />
+                      )}
+                    </>
                   )}
                 </View>
               );
