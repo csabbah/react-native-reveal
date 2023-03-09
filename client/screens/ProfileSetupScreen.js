@@ -91,10 +91,22 @@ const ProfileSetup = ({ route }) => {
 
   const [formProgress, setFormProgress] = useState(0);
 
+  // Make sure only iOS users have the option to secure with Apple
+  const secureProp =
+    Platform.OS === "ios"
+      ? [
+          ["Enter an Email", "Enter a Password", "Apple"],
+          ["email", "password", "apple"],
+        ]
+      : [
+          ["Enter an Email", "Enter a Password"],
+          ["email", "password"],
+        ];
+
   const questions = [
     {
-      label: ["Enter an email", "Enter a password", "Apple"],
-      stateLabel: ["email", "password", "apple"],
+      label: secureProp[0],
+      stateLabel: secureProp[1],
     },
     { label: ["What is your first name?"], stateLabel: ["firstName"] },
     {
@@ -246,7 +258,6 @@ const ProfileSetup = ({ route }) => {
     }
   };
 
-  console.log(user);
   return (
     <View
       style={{
@@ -433,8 +444,8 @@ const ProfileSetup = ({ route }) => {
                   ) : (
                     <>
                       {/* // ? If it doesn't have both input types and doesn't have options, that means its just a regular input field */}
-                      {Platform.OS === "ios" && prompt == "Apple" ? (
-                        Platform.OS === "ios" && !appleVerified ? (
+                      {prompt == "Apple" ? (
+                        !appleVerified ? (
                           <Button
                             onPress={appleLoginOrRegister}
                             title="Secure with Apple"
