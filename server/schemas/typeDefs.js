@@ -4,6 +4,17 @@ const typeDefs = gql`
   type Query {
     users: [User]
     user(_id: ID!): User
+    isExistingUser(
+      email: String
+      phoneNumber: String
+      apple: String
+    ): accountExists
+  }
+
+  type accountExists {
+    appleExists: Boolean
+    emailExists: Boolean
+    phoneExists: Boolean
   }
 
   type Birthday {

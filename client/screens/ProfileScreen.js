@@ -10,7 +10,7 @@ import { GET_USER } from "../utils/queries";
 const ProfileScreen = () => {
   const [userId, setUserId] = useState("");
 
-  const checkAcc = async () => {
+  const checkAccount = async () => {
     const token = await Auth.getToken();
     const profileId = await Auth.getProfile(token).data._id;
 
@@ -39,7 +39,7 @@ const ProfileScreen = () => {
   };
 
   useEffect(() => {
-    checkAcc();
+    checkAccount();
 
     if (user === null || error) {
       logout();

@@ -26,6 +26,24 @@ const resolvers = {
 
       return User.find();
     },
+    isExistingUser: async (parent, { email, phoneNumber, apple }) => {
+      const checkApple = await User.findOne({ apple: apple });
+      const checkEmail = await User.findOne({ email: email });
+
+      const hashedPhoneNumber = crypto
+        .createHash("sha256")
+        .update(`${PHONE_NUMBER_SALT}-${phoneNumber}`)
+        .digest("hex");
+      const checkPhone = await User.findOne({ phoneNumber: hashedPhoneNumber });
+
+      let accountExists = {
+        appleExists: checkApple ? true : false,
+        emailExists: checkEmail ? true : false,
+        phoneExists: checkPhone ? true : false,
+      };
+
+      return accountExists;
+    },
   },
   Mutation: {
     loginApple: async (parent, { sub }) => {

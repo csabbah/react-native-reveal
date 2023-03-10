@@ -22,10 +22,42 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as AppleAuthentication from "expo-apple-authentication";
 import jwtDecode from "jwt-decode";
 
+import Helpers from "../utils/helpers";
+
+import { useQuery } from "@apollo/client";
+import { ACCOUNT_EXISTS } from "../utils/queries";
+
 const ProfileSetup = ({ route }) => {
   // !! Clean up the form ui, its very messy
+  // !! Replace all Alerts with UI updates
 
+  const [user, setUser] = useState({});
+
+  const [formProgress, setFormProgress] = useState(0);
   const [appleVerified, setAppleVerified] = useState(false);
+
+  useAccountExists(user?.email, user?.apple, setAppleVerified).data;
+
+  // This will check the email and apple account the user is attempting to use to secure their profile
+  // Important note, this useQUery will only execute when there is a change in user.email and user.apple
+  // That means in any other prompt, this query will not execute
+  function useAccountExists(email, apple) {
+    const { data, loading, error } = useQuery(ACCOUNT_EXISTS, {
+      onCompleted: (data) => {
+        if (data.isExistingUser.appleExists) {
+          alert("Apple exists");
+          setAppleVerified(false);
+        }
+        if (data.isExistingUser.emailExists) {
+          alert("Email exists");
+          setUser({ ...user, email: "" });
+        }
+      },
+      variables: { email, apple },
+    });
+
+    return { data, loading, error };
+  }
 
   // Extract the phone number that was passed from previous screen
   const { phoneNumber, success } = route.params.data;
@@ -38,58 +70,6 @@ const ProfileSetup = ({ route }) => {
     );
     return questions[objIndex].label.indexOf(labelToFind);
   };
-
-  const startYear = 1950; // You can replace this with any year you like
-  const endYear = new Date().getFullYear(); // Get the current year
-
-  // Create an array of years using a loop
-  const years = [];
-  for (let year = startYear; year <= endYear; year++) {
-    years.push(year);
-  }
-
-  function daysInMonth(month, year) {
-    return new Date(year, month, 0).getDate();
-  }
-
-  const year = 2023; // Replace this with the year you want
-  const month = 3; // Replace this with the month you want (1 = January, 2 = February, etc.)
-
-  const numDays = daysInMonth(month, year);
-
-  // Create an array of days of the month using a loop
-  const days = [];
-  for (let day = 1; day <= numDays; day++) {
-    days.push(day);
-  }
-
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "June",
-    "July",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-
-  const heights = [];
-
-  for (let i = 60; i <= 225; i++) {
-    const cm = `${i}cm`;
-    const ft = `${Math.floor(i / 30.48)}'${Math.round((i % 30.48) / 2.54)}"`;
-    const height = `${cm} - ${ft}`;
-    heights.push(height);
-  }
-
-  const [user, setUser] = useState({});
-
-  const [formProgress, setFormProgress] = useState(0);
 
   // Make sure only iOS users have the option to secure with Apple
   const secureProp =
@@ -143,7 +123,7 @@ const ProfileSetup = ({ route }) => {
     {
       label: ["How tall are you?"],
       stateLabel: ["height"],
-      options: heights,
+      options: Helpers.returnHeights(),
     },
     {
       label: ["What's your ethnicity?"],
@@ -236,7 +216,7 @@ const ProfileSetup = ({ route }) => {
     }
   };
 
-  const appleLoginOrRegister = async () => {
+  const attachAppleId = async () => {
     try {
       const { identityToken } = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -248,6 +228,7 @@ const ProfileSetup = ({ route }) => {
       // If identity token exists, the login was successful
       if (identityToken) {
         const decodedToken = jwtDecode(identityToken);
+
         setAppleVerified(true);
         // Pass the sub property because it is a unique ID that is specific to this application and the user's apple ID
         // the Sub property will remain consistent even if user decides not to share their data
@@ -297,7 +278,7 @@ const ProfileSetup = ({ route }) => {
                             textAlign: "left",
                           }}
                           key={0}
-                          data={years}
+                          data={Helpers.returnDates().years}
                           onSelect={(selectedItem) => {
                             setUser({
                               ...user,
@@ -321,7 +302,7 @@ const ProfileSetup = ({ route }) => {
                             marginHorizontal: 10,
                           }}
                           key={1}
-                          data={monthNames}
+                          data={Helpers.returnDates().monthNames}
                           onSelect={(selectedItem) => {
                             setUser({
                               ...user,
@@ -344,7 +325,7 @@ const ProfileSetup = ({ route }) => {
                             flex: 0.5,
                           }}
                           key={3}
-                          data={days}
+                          data={Helpers.returnDates().days}
                           onSelect={(selectedItem) => {
                             setUser({
                               ...user,
@@ -447,7 +428,7 @@ const ProfileSetup = ({ route }) => {
                       {prompt == "Apple" ? (
                         !appleVerified ? (
                           <Button
-                            onPress={appleLoginOrRegister}
+                            onPress={attachAppleId}
                             title="Secure with Apple"
                           />
                         ) : (
