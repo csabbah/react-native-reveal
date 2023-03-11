@@ -98,7 +98,7 @@ const VerifyPhone = () => {
             <TouchableOpacity
               onPress={() => {
                 navigation.navigate("ProfileSetup", {
-                  data: { phoneNumber: "645-343-3433", success: "True" },
+                  data: { phoneNumber: "+19057811644", success: "True" },
                 });
               }}
             >

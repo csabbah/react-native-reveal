@@ -83,6 +83,7 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
+      default: "",
     },
     profileImg: {
       type: String,

@@ -8,10 +8,12 @@ import {
   Platform,
   TextInput,
   Button,
+  PanResponder,
+  Animated,
 } from "react-native";
 import SelectDropdown from "react-native-select-dropdown";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import { useNavigation } from "@react-navigation/core";
 
@@ -27,13 +29,15 @@ import Helpers from "../utils/helpers";
 import { useQuery } from "@apollo/client";
 import { ACCOUNT_EXISTS } from "../utils/queries";
 
+import allPrompts from "../utils/prompts.json";
+
 const ProfileSetup = ({ route }) => {
   // !! Clean up the form ui, its very messy
   // !! Replace all Alerts with UI updates
 
   const [user, setUser] = useState({});
-
   const [formProgress, setFormProgress] = useState(0);
+
   const [appleVerified, setAppleVerified] = useState(false);
 
   useAccountExists(user?.email, user?.apple, setAppleVerified).data;
@@ -193,10 +197,6 @@ const ProfileSetup = ({ route }) => {
     },
   ];
 
-  useEffect(() => {
-    phoneNumber && setUser({ ...user, phoneNumber: phoneNumber });
-  }, [phoneNumber]);
-
   const [addUser, { data, error }] = useMutation(ADD_USER, {
     onCompleted: (data) => {
       // If data returned is valid, redirect to home page
@@ -239,6 +239,96 @@ const ProfileSetup = ({ route }) => {
     }
   };
 
+  // ? ---------- --------- ---------- ---------- --------- --------- --------- All functions below are for handling prompts
+  const [showPrompts, setShowPrompts] = useState(false);
+  const [promptProgress, setPromptProgress] = useState(0);
+
+  const pan = useRef(new Animated.ValueXY()).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (evt, gestureState) => {
+        Animated.event(
+          [
+            null,
+            {
+              dx: pan.x, // x,y are Animated.Value
+              dy: pan.y,
+            },
+          ],
+          { useNativeDriver: false }
+        )(evt, gestureState);
+      },
+      onPanResponderRelease: () => {
+        // Keeps the same position it had upon release
+        pan.extractOffset();
+      },
+    })
+  ).current;
+
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  function handleItemClick(item) {
+    const selectedItemIndex = selectedItems.findIndex(
+      (selectedItem) => selectedItem.value === item
+    );
+
+    if (selectedItemIndex === -1) {
+      if (selectedItems.length < 5) {
+        setSelectedItems([
+          ...selectedItems,
+          { value: item, className: "selected" },
+        ]);
+      }
+    } else {
+      const newSelectedItems = [...selectedItems];
+      newSelectedItems.splice(selectedItemIndex, 1);
+      setSelectedItems(newSelectedItems);
+    }
+  }
+
+  function handleAnswerChange(question, text) {
+    const prompts = user.prompts || [];
+    const existingPromptIndex = prompts.findIndex(
+      (prompt) => prompt.question === question
+    );
+
+    if (!text) {
+      if (existingPromptIndex !== -1) {
+        const newPrompts = [...prompts];
+        newPrompts.splice(existingPromptIndex, 1);
+        setUser({ ...user, prompts: newPrompts });
+      }
+    } else {
+      if (existingPromptIndex !== -1) {
+        const newPrompts = [...prompts];
+        newPrompts[existingPromptIndex].answer = text;
+        setUser({ ...user, prompts: newPrompts });
+      } else {
+        setUser({ ...user, prompts: [...prompts, { question, answer: text }] });
+      }
+    }
+  }
+
+  useEffect(() => {
+    phoneNumber && setUser({ ...user, phoneNumber: phoneNumber });
+
+    // If promptProgress is 1, that means we're on the page where users are answering prompts....
+    // If prompts already exists then...
+    if (promptProgress == 1 && user.prompts) {
+      // Check the current prompts and remove any prompts that weren't selected
+      setUser({
+        ...user,
+        prompts: [
+          ...user.prompts,
+          user.prompts.filter((prompt) =>
+            selectedItems.includes(prompt.question)
+          ),
+        ],
+      });
+    }
+  }, [phoneNumber, promptProgress]);
+
   return (
     <View
       style={{
@@ -257,208 +347,291 @@ const ProfileSetup = ({ route }) => {
           </View>
           <View style={styles.inputWrapper}>
             {/* Iterate through the questions.label array  */}
-            {questions[formProgress].label.map((prompt, i) => {
-              return (
-                <View key={i}>
-                  {formProgress == 0 && i == 0 && (
-                    <Text>Secure your account. (Optional)</Text>
-                  )}
-                  <Text style={styles.inputHeader}>
-                    {questions[formProgress].label[i]}
-                  </Text>
-                  {questions[formProgress].isDatePrompt ? (
-                    <>
-                      <View style={{ display: "flex", flexDirection: "row" }}>
+            {!showPrompts &&
+              questions[formProgress].label.map((prompt, i) => {
+                return (
+                  <View key={i}>
+                    {formProgress == 0 && i == 0 && (
+                      <Text>Secure your account. (Optional)</Text>
+                    )}
+                    <Text style={styles.inputHeader}>
+                      {questions[formProgress].label[i]}
+                    </Text>
+                    {questions[formProgress].isDatePrompt ? (
+                      <>
+                        <View style={{ display: "flex", flexDirection: "row" }}>
+                          <SelectDropdown
+                            buttonStyle={{
+                              ...styles.dropDown,
+                              flex: 0.5,
+                            }}
+                            buttonTextStyle={{
+                              textAlign: "left",
+                            }}
+                            key={0}
+                            data={Helpers.returnDates().years}
+                            onSelect={(selectedItem) => {
+                              setUser({
+                                ...user,
+                                dateOfBirth: {
+                                  ...(user.dateOfBirth || {}),
+                                  year: selectedItem,
+                                },
+                              });
+                            }}
+                            defaultButtonText={"Year"}
+                            defaultValue={
+                              user.dateOfBirth &&
+                              user.dateOfBirth.year &&
+                              user.dateOfBirth.year
+                            }
+                          />
+                          <SelectDropdown
+                            buttonStyle={{
+                              ...styles.dropDown,
+                              flex: 0.5,
+                              marginHorizontal: 10,
+                            }}
+                            key={1}
+                            data={Helpers.returnDates().monthNames}
+                            onSelect={(selectedItem) => {
+                              setUser({
+                                ...user,
+                                dateOfBirth: {
+                                  ...(user.dateOfBirth || {}),
+                                  month: selectedItem,
+                                },
+                              });
+                            }}
+                            defaultButtonText={"Month"}
+                            defaultValue={
+                              user.dateOfBirth &&
+                              user.dateOfBirth.month &&
+                              user.dateOfBirth.month
+                            }
+                          />
+                          <SelectDropdown
+                            buttonStyle={{
+                              ...styles.dropDown,
+                              flex: 0.5,
+                            }}
+                            key={3}
+                            data={Helpers.returnDates().days}
+                            onSelect={(selectedItem) => {
+                              setUser({
+                                ...user,
+                                dateOfBirth: {
+                                  ...(user.dateOfBirth || {}),
+                                  day: selectedItem,
+                                },
+                              });
+                            }}
+                            defaultButtonText={"Day"}
+                            defaultValue={
+                              user.dateOfBirth &&
+                              user.dateOfBirth.day &&
+                              user.dateOfBirth.day
+                            }
+                          />
+                        </View>
+                      </>
+                    ) : // ? If the current data has 'hasBothInputTypes', that means we are rendering an input and a select box
+                    questions[formProgress].hasBothInputTypes ? (
+                      <>
+                        {/* // ? For the first one, render a regular text input. The second is always the select input */}
+                        {i != 0 ? (
+                          <TextInput
+                            style={{ ...styles.textInput, marginBottom: 10 }}
+                            fontSize={28}
+                            placeholder={prompt}
+                            onChangeText={(text) =>
+                              setUser({
+                                ...user,
+                                [questions[formProgress].stateLabel[1]]: text,
+                              })
+                            }
+                            defaultValue={
+                              user[questions[formProgress].stateLabel[1]] &&
+                              user[questions[formProgress].stateLabel[1]]
+                            }
+                          />
+                        ) : (
+                          <SelectDropdown
+                            // By adding the key, every time we generate a new SelectDropdown element, it re-renders
+                            key={formProgress}
+                            buttonStyle={styles.dropDown}
+                            data={questions[formProgress].options}
+                            onSelect={(selectedItem, index) => {
+                              setUser({
+                                ...user,
+                                // Index of the label is equal to the index of the state label
+                                // Label index is associated with state label index
+                                [questions[formProgress].stateLabel[0]]:
+                                  selectedItem,
+                              });
+                            }}
+                            defaultButtonText={"Choose option..."}
+                            defaultValue={
+                              user[questions[formProgress].stateLabel[0]] &&
+                              user[questions[formProgress].stateLabel[0]]
+                            }
+                          />
+                        )}
+                      </>
+                    ) : // ? If it doesn't have both input types but it has options, that means it is meant to be a select input
+                    questions[formProgress].options ? (
+                      <>
                         <SelectDropdown
-                          buttonStyle={{
-                            ...styles.dropDown,
-                            flex: 0.5,
-                          }}
+                          buttonStyle={styles.dropDown}
                           buttonTextStyle={{
                             textAlign: "left",
                           }}
-                          key={0}
-                          data={Helpers.returnDates().years}
-                          onSelect={(selectedItem) => {
-                            setUser({
-                              ...user,
-                              dateOfBirth: {
-                                ...(user.dateOfBirth || {}),
-                                year: selectedItem,
-                              },
-                            });
-                          }}
-                          defaultButtonText={"Year"}
-                          defaultValue={
-                            user.dateOfBirth &&
-                            user.dateOfBirth.year &&
-                            user.dateOfBirth.year
-                          }
-                        />
-                        <SelectDropdown
-                          buttonStyle={{
-                            ...styles.dropDown,
-                            flex: 0.5,
-                            marginHorizontal: 10,
-                          }}
-                          key={1}
-                          data={Helpers.returnDates().monthNames}
-                          onSelect={(selectedItem) => {
-                            setUser({
-                              ...user,
-                              dateOfBirth: {
-                                ...(user.dateOfBirth || {}),
-                                month: selectedItem,
-                              },
-                            });
-                          }}
-                          defaultButtonText={"Month"}
-                          defaultValue={
-                            user.dateOfBirth &&
-                            user.dateOfBirth.month &&
-                            user.dateOfBirth.month
-                          }
-                        />
-                        <SelectDropdown
-                          buttonStyle={{
-                            ...styles.dropDown,
-                            flex: 0.5,
-                          }}
-                          key={3}
-                          data={Helpers.returnDates().days}
-                          onSelect={(selectedItem) => {
-                            setUser({
-                              ...user,
-                              dateOfBirth: {
-                                ...(user.dateOfBirth || {}),
-                                day: selectedItem,
-                              },
-                            });
-                          }}
-                          defaultButtonText={"Day"}
-                          defaultValue={
-                            user.dateOfBirth &&
-                            user.dateOfBirth.day &&
-                            user.dateOfBirth.day
-                          }
-                        />
-                      </View>
-                    </>
-                  ) : // ? If the current data has 'hasBothInputTypes', that means we are rendering an input and a select box
-                  questions[formProgress].hasBothInputTypes ? (
-                    <>
-                      {/* // ? For the first one, render a regular text input. The second is always the select input */}
-                      {i != 0 ? (
-                        <TextInput
-                          style={{ ...styles.textInput, marginBottom: 10 }}
-                          fontSize={28}
-                          placeholder={prompt}
-                          onChangeText={(text) =>
-                            setUser({
-                              ...user,
-                              [questions[formProgress].stateLabel[1]]: text,
-                            })
-                          }
-                          defaultValue={
-                            user[questions[formProgress].stateLabel[1]] &&
-                            user[questions[formProgress].stateLabel[1]]
-                          }
-                        />
-                      ) : (
-                        <SelectDropdown
-                          // By adding the key, every time we generate a new SelectDropdown element, it re-renders
                           key={formProgress}
-                          buttonStyle={styles.dropDown}
                           data={questions[formProgress].options}
                           onSelect={(selectedItem, index) => {
                             setUser({
                               ...user,
                               // Index of the label is equal to the index of the state label
                               // Label index is associated with state label index
-                              [questions[formProgress].stateLabel[0]]:
-                                selectedItem,
+                              [questions[formProgress].stateLabel[
+                                getIndexOfLabel(prompt)
+                              ]]: selectedItem,
                             });
                           }}
                           defaultButtonText={"Choose option..."}
                           defaultValue={
-                            user[questions[formProgress].stateLabel[0]] &&
-                            user[questions[formProgress].stateLabel[0]]
-                          }
-                        />
-                      )}
-                    </>
-                  ) : // ? If it doesn't have both input types but it has options, that means it is meant to be a select input
-                  questions[formProgress].options ? (
-                    <>
-                      <SelectDropdown
-                        buttonStyle={styles.dropDown}
-                        buttonTextStyle={{
-                          textAlign: "left",
-                        }}
-                        key={formProgress}
-                        data={questions[formProgress].options}
-                        onSelect={(selectedItem, index) => {
-                          setUser({
-                            ...user,
-                            // Index of the label is equal to the index of the state label
-                            // Label index is associated with state label index
-                            [questions[formProgress].stateLabel[
-                              getIndexOfLabel(prompt)
-                            ]]: selectedItem,
-                          });
-                        }}
-                        defaultButtonText={"Choose option..."}
-                        defaultValue={
-                          user[
-                            questions[formProgress].stateLabel[
-                              getIndexOfLabel(prompt)
-                            ]
-                          ] &&
-                          user[
-                            questions[formProgress].stateLabel[
-                              getIndexOfLabel(prompt)
-                            ]
-                          ]
-                        }
-                      />
-                    </>
-                  ) : (
-                    <>
-                      {/* // ? If it doesn't have both input types and doesn't have options, that means its just a regular input field */}
-                      {prompt == "Apple" ? (
-                        !appleVerified ? (
-                          <Button
-                            onPress={attachAppleId}
-                            title="Secure with Apple"
-                          />
-                        ) : (
-                          <Text>Apple Secured</Text>
-                        )
-                      ) : (
-                        <TextInput
-                          style={{ ...styles.textInput, marginBottom: 10 }}
-                          fontSize={28}
-                          placeholder={prompt}
-                          onChangeText={(text) => {
-                            setUser({
-                              ...user,
-                              [questions[formProgress].stateLabel[
+                            user[
+                              questions[formProgress].stateLabel[
                                 getIndexOfLabel(prompt)
-                              ]]: text,
-                            });
-                          }}
-                          defaultValue={
-                            user[questions[formProgress].stateLabel[i]] &&
-                            user[questions[formProgress].stateLabel[i]]
+                              ]
+                            ] &&
+                            user[
+                              questions[formProgress].stateLabel[
+                                getIndexOfLabel(prompt)
+                              ]
+                            ]
                           }
                         />
-                      )}
-                    </>
-                  )}
-                </View>
-              );
-            })}
+                      </>
+                    ) : (
+                      <>
+                        {/* // ? If it doesn't have both input types and doesn't have options, that means its just a regular input field */}
+                        {prompt == "Apple" ? (
+                          !appleVerified ? (
+                            <Button
+                              onPress={attachAppleId}
+                              title="Secure with Apple"
+                            />
+                          ) : (
+                            <Text>Apple Secured</Text>
+                          )
+                        ) : (
+                          <TextInput
+                            style={{ ...styles.textInput, marginBottom: 10 }}
+                            fontSize={28}
+                            placeholder={prompt}
+                            onChangeText={(text) => {
+                              setUser({
+                                ...user,
+                                [questions[formProgress].stateLabel[
+                                  getIndexOfLabel(prompt)
+                                ]]: text,
+                              });
+                            }}
+                            defaultValue={
+                              user[questions[formProgress].stateLabel[i]] &&
+                              user[questions[formProgress].stateLabel[i]]
+                            }
+                          />
+                        )}
+                      </>
+                    )}
+                  </View>
+                );
+              })}
           </View>
+          {showPrompts && (
+            <View
+              style={{
+                ...styles.inputWrapper,
+                alignItems: "flex-start",
+                justifyContent: "center",
+                marginBottom: 100,
+              }}
+            >
+              <Text style={{ ...styles.inputHeader, marginBottom: 20 }}>
+                Let's add some prompts to your profile
+              </Text>
+              <View
+                style={{
+                  height: 400,
+                  overflow: "scroll",
+                }}
+              >
+                {promptProgress == 0 ? (
+                  <Animated.View
+                    style={{
+                      zIndex: 1,
+                      transform: [{ translateY: pan.y }],
+                    }}
+                    {...panResponder.panHandlers}
+                  >
+                    {allPrompts.map((prompt, i) => {
+                      if (i >= 15) return;
+
+                      const selectedItem = selectedItems.find(
+                        (selectedItem) => selectedItem.value === prompt
+                      );
+                      const isSelected = selectedItem !== undefined;
+
+                      return (
+                        <TouchableOpacity
+                          key={i}
+                          style={{ marginVertical: 10 }}
+                          onPress={() => {
+                            handleItemClick(prompt);
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 22,
+                              color: isSelected ? "red" : "black",
+                            }}
+                          >
+                            {prompt}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </Animated.View>
+                ) : (
+                  <View>
+                    {selectedItems.map((item, i) => {
+                      return (
+                        <View key={i}>
+                          <Text>{item.value}</Text>
+                          <TextInput
+                            style={{ ...styles.textInput, marginBottom: 10 }}
+                            fontSize={28}
+                            placeholder={"Enter your answer"}
+                            onChangeText={(text) =>
+                              handleAnswerChange(item.value, text)
+                            }
+                            defaultValue={
+                              user.prompts &&
+                              user.prompts.find(
+                                (p) => p.question === item.value
+                              )?.answer
+                            }
+                          />
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
 
           <View
             style={{
@@ -468,9 +641,17 @@ const ProfileSetup = ({ route }) => {
           >
             <TouchableOpacity
               onPress={() =>
-                formProgress == questions.length - 1
+                // If show prompts is false then progress through the regular form
+                !showPrompts
+                  ? formProgress == questions.length - 1
+                    ? setShowPrompts(true)
+                    : setFormProgress(formProgress + 1)
+                  : // If show prompts true, that means we're looking through the prompts so progress them
+                  promptProgress == 1
                   ? handleFormSubmit()
-                  : setFormProgress(formProgress + 1)
+                  : selectedItems.length !== 5
+                  ? alert("Need to choose 5 prompts to continue")
+                  : setPromptProgress(promptProgress + 1)
               }
             >
               <View style={styles.continueBtn}>
@@ -479,9 +660,15 @@ const ProfileSetup = ({ route }) => {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
-                formProgress == 0
-                  ? navigation.navigate("Welcome")
-                  : setFormProgress(formProgress - 1);
+                // If show prompts is false then progress through the regular form
+                !showPrompts
+                  ? formProgress == 0
+                    ? navigation.navigate("Welcome")
+                    : setFormProgress(formProgress - 1)
+                  : // If show prompts true, that means we're looking through the prompts so progress them
+                  promptProgress == 0
+                  ? setShowPrompts(false)
+                  : setPromptProgress(promptProgress - 1);
               }}
             >
               <View

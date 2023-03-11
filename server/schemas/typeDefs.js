@@ -23,10 +23,20 @@ const typeDefs = gql`
     year: Int
   }
 
+  type Prompts {
+    question: String
+    answer: String
+  }
+
   input birthdayInput {
     day: Int
     month: String
     year: Int
+  }
+
+  input promptInput {
+    question: String
+    answer: String
   }
 
   type User {
@@ -54,6 +64,7 @@ const typeDefs = gql`
     drinker: String
     smoker: String
     drugUse: String
+    prompts: [Prompts]
   }
 
   input addUserInput {
@@ -82,6 +93,7 @@ const typeDefs = gql`
     drinker: String
     smoker: String
     drugUse: String
+    prompts: [promptInput]
   }
 
   type Mutation {
