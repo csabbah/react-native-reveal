@@ -269,42 +269,57 @@ const ProfileSetup = ({ route }) => {
   const [selectedItems, setSelectedItems] = useState([]);
 
   function handleItemClick(item) {
+    // Find the index of the item that was clicked on
     const selectedItemIndex = selectedItems.findIndex(
-      (selectedItem) => selectedItem.value === item
+      (selectedItem) => selectedItem === item
     );
 
+    // If the index is -1, that means the item is not in the selected array
     if (selectedItemIndex === -1) {
+      // In that case, add the item we selected to the selected items array IF there are less then 6 items
       if (selectedItems.length < 5) {
-        setSelectedItems([
-          ...selectedItems,
-          { value: item, className: "selected" },
-        ]);
+        setSelectedItems([...selectedItems, item]);
       }
     } else {
+      // If item is found, spread the active items array
       const newSelectedItems = [...selectedItems];
+      // Then remove the selected item
       newSelectedItems.splice(selectedItemIndex, 1);
+      // Then updated the array
       setSelectedItems(newSelectedItems);
     }
   }
 
   function handleAnswerChange(question, text) {
+    // If prompts object exists in the user object, return the object
     const prompts = user.prompts || [];
+    // Get index of the current prompt by looking through the user state object 'prompts' object
     const existingPromptIndex = prompts.findIndex(
       (prompt) => prompt.question === question
     );
 
+    // If text is empty
     if (!text) {
+      // Remove that prompt from the array using splice method
       if (existingPromptIndex !== -1) {
         const newPrompts = [...prompts];
         newPrompts.splice(existingPromptIndex, 1);
         setUser({ ...user, prompts: newPrompts });
       }
     } else {
+      // If text is valid, execute these:
+      // If prompt EXISTS...
       if (existingPromptIndex !== -1) {
+        // Updates the value of the prompt inside the user.prompts object
+        // First spread the current array
         const newPrompts = [...prompts];
+        // Then take the prompt index and update the answer key
         newPrompts[existingPromptIndex].answer = text;
+        // Finally update the user object
         setUser({ ...user, prompts: newPrompts });
       } else {
+        // If prompt DOES NOT EXIST
+        // Simply add it
         setUser({ ...user, prompts: [...prompts, { question, answer: text }] });
       }
     }
@@ -320,10 +335,10 @@ const ProfileSetup = ({ route }) => {
       setUser({
         ...user,
         prompts: [
-          ...user.prompts,
-          user.prompts.filter((prompt) =>
-            selectedItems.includes(prompt.question)
-          ),
+          // Spread the user.prompts and filter at the same time
+          ...user.prompts
+            .filter((prompt) => selectedItems.includes(prompt.question))
+            .map((prompt) => ({ ...prompt })),
         ],
       });
     }
@@ -580,9 +595,8 @@ const ProfileSetup = ({ route }) => {
                       if (i >= 15) return;
 
                       const selectedItem = selectedItems.find(
-                        (selectedItem) => selectedItem.value === prompt
+                        (selectedItem) => selectedItem === prompt
                       );
-                      const isSelected = selectedItem !== undefined;
 
                       return (
                         <TouchableOpacity
@@ -595,7 +609,7 @@ const ProfileSetup = ({ route }) => {
                           <Text
                             style={{
                               fontSize: 22,
-                              color: isSelected ? "red" : "black",
+                              color: selectedItem ? "red" : "black",
                             }}
                           >
                             {prompt}
@@ -609,19 +623,18 @@ const ProfileSetup = ({ route }) => {
                     {selectedItems.map((item, i) => {
                       return (
                         <View key={i}>
-                          <Text>{item.value}</Text>
+                          <Text>{item}</Text>
                           <TextInput
                             style={{ ...styles.textInput, marginBottom: 10 }}
                             fontSize={28}
                             placeholder={"Enter your answer"}
                             onChangeText={(text) =>
-                              handleAnswerChange(item.value, text)
+                              handleAnswerChange(item, text)
                             }
                             defaultValue={
                               user.prompts &&
-                              user.prompts.find(
-                                (p) => p.question === item.value
-                              )?.answer
+                              user.prompts.find((p) => p.question === item)
+                                ?.answer
                             }
                           />
                         </View>
