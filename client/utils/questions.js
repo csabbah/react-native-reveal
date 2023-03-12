@@ -16,6 +16,7 @@ export default questions = [
   {
     label: secureProp[0],
     stateLabel: secureProp[1],
+    isRequired: [true, true],
   },
   {
     label: ["What is your first name?"],
@@ -101,7 +102,7 @@ export default questions = [
     label: ["Highest level of education", "Where did you go to school?"],
     options: ["High school", "Undergrad", "Postgrad"],
     stateLabel: ["educationAttained", "school"],
-    isRequired: [true],
+    isRequired: [true, true],
   },
   {
     label: ["What are your religious beliefs?"],

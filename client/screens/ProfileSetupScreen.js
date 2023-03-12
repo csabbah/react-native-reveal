@@ -22,6 +22,9 @@ import GeneralForm from "../components/profileSetup/GeneralForm";
 const ProfileSetup = ({ route }) => {
   // !! Replace all Alerts with UI updates
 
+  const [isRequiredFilled, setIsRequiredRilled] = useState(true);
+  const [displayErr, setDisplayErr] = useState(false);
+
   const [user, setUser] = useState({});
   const [formProgress, setFormProgress] = useState(0);
 
@@ -60,11 +63,17 @@ const ProfileSetup = ({ route }) => {
 
   // Handle progressing through the forms
   const handleContinue = () => {
+    // Remove the 'Fill missing fields' update
+    setDisplayErr(false);
+
     // If show prompts is false then progress through the regular form
     if (!showPrompts) {
-      return formProgress == questions.length - 1
+      return formProgress == questions.length - 1 && isRequiredFilled
         ? setShowPrompts(true)
-        : setFormProgress(formProgress + 1);
+        : // If we haven't progressed through all questions, continue the form progression
+        isRequiredFilled
+        ? setFormProgress(formProgress + 1)
+        : setDisplayErr(true);
     }
     // If show prompts true, that means we're looking through the prompts so progress them
     promptProgress == 1
@@ -76,6 +85,8 @@ const ProfileSetup = ({ route }) => {
 
   // Handle going back through the forms
   const handlePrevious = () => {
+    setDisplayErr(false);
+
     // If show prompts is false then progress through the regular form
     if (!showPrompts) {
       return formProgress == 0
@@ -107,8 +118,13 @@ const ProfileSetup = ({ route }) => {
               formProgress={formProgress}
               user={user}
               setUser={setUser}
+              isRequiredFilled={isRequiredFilled}
+              setIsRequiredRilled={setIsRequiredRilled}
+              displayErr={displayErr}
+              setDisplayErr={setDisplayErr}
             />
           )}
+
           {/* // ? The prompts (questions and answers) */}
           {showPrompts && (
             <PromptForm

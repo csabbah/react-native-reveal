@@ -1,6 +1,6 @@
 import { View, Text, TextInput, Button } from "react-native";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import Helpers from "../../utils/helpers";
 
@@ -14,8 +14,17 @@ import { ACCOUNT_EXISTS } from "../../utils/queries";
 
 import SelectDropdown from "react-native-select-dropdown";
 
-const GeneralForm = ({ styles, formProgress, user, setUser }) => {
+const GeneralForm = ({
+  styles,
+  formProgress,
+  user,
+  setUser,
+  setIsRequiredRilled,
+  displayErr,
+  setDisplayErr,
+}) => {
   const [appleVerified, setAppleVerified] = useState(false);
+  const [fieldMissing, setFieldMissing] = useState([formProgress, false, 0]);
 
   // This will check the email and apple account the user is attempting to use to secure their profile
   // Important note, this useQUery will only execute when there is a change in user.email and user.apple
@@ -70,6 +79,114 @@ const GeneralForm = ({ styles, formProgress, user, setUser }) => {
     }
   };
 
+  useEffect(() => {
+    if (formProgress == 0) {
+      if (user.password && (user.email == undefined || !user.email)) {
+        // setFieldMissing['where we are at', 'if field is missing', 'the prompt index']
+        setFieldMissing([formProgress, true, 0]);
+        return setIsRequiredRilled(false);
+      }
+      if ((user.password == undefined || !user.password) && user.email) {
+        setFieldMissing([formProgress, true, 1]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 1) {
+      if (!user.firstName || user.firstName == undefined) {
+        setFieldMissing([formProgress, true, 0]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 2) {
+      if (
+        !user.dateOfBirth ||
+        !user.dateOfBirth.year ||
+        !user.dateOfBirth.month ||
+        !user.dateOfBirth.day
+      ) {
+        setFieldMissing([formProgress, true]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 3) {
+      if (!user.gender || user.gender == undefined) {
+        setFieldMissing([formProgress, true, 0]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 4) {
+      if (!user.sexuality || user.sexuality == undefined) {
+        setFieldMissing([formProgress, true, 0]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 5) {
+      if (!user.interest || user.interest == undefined) {
+        setFieldMissing([formProgress, true, 0]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 6) {
+      if (!user.height || user.height == undefined) {
+        setFieldMissing([formProgress, true, 0]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 7) {
+      if (!user.ethnicity || user.ethnicity == undefined) {
+        setFieldMissing([formProgress, true, 0]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 8) {
+      if (!user.children || user.children == undefined) {
+        setFieldMissing([formProgress, true, 0]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 9) {
+      if (!user.home || user.home == undefined) {
+        setFieldMissing([formProgress, true, 0]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 10) {
+      if (!user.jobLocation || user.jobLocation == undefined) {
+        setFieldMissing([formProgress, true]);
+        return setIsRequiredRilled(false);
+      }
+      if (!user.jobTitle || user.jobTitle == undefined) {
+        setFieldMissing([formProgress, true]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 11) {
+      if (!user.school || user.school == undefined) {
+        setFieldMissing([formProgress, true]);
+        return setIsRequiredRilled(false);
+      }
+      if (!user.educationAttained || user.educationAttained == undefined) {
+        setFieldMissing([formProgress, true]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 12) {
+      if (!user.religiousBelief || user.religiousBelief == undefined) {
+        setFieldMissing([formProgress, true]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 13) {
+      if (!user.politicalBelief || user.politicalBelief == undefined) {
+        setFieldMissing([formProgress, true]);
+        return setIsRequiredRilled(false);
+      }
+    } else if (formProgress == 14) {
+      if (!user.drinker || user.drinker == undefined) {
+        setFieldMissing([formProgress, true]);
+        return setIsRequiredRilled(false);
+      }
+      if (!user.smoker || user.smoker == undefined) {
+        setFieldMissing([formProgress, true]);
+        return setIsRequiredRilled(false);
+      }
+      if (!user.drugUse || user.drugUse == undefined) {
+        setFieldMissing([formProgress, true]);
+        return setIsRequiredRilled(false);
+      }
+    }
+
+    setFieldMissing([formProgress, false, 0]);
+    setIsRequiredRilled(true);
+  }, [user, formProgress]);
+
   return (
     <View style={styles.inputWrapper}>
       {/* Iterate through the questions.label array  */}
@@ -88,17 +205,25 @@ const GeneralForm = ({ styles, formProgress, user, setUser }) => {
                   <SelectDropdown
                     buttonStyle={{
                       ...styles.dropDown,
-                      flex: 0.5,
-                    }}
-                    buttonTextStyle={{
-                      textAlign: "left",
+                      flex: 0.33,
+                      borderWidth: 0.8,
+                      borderColor:
+                        (displayErr &&
+                          user.dateOfBirth !== undefined &&
+                          (!user.dateOfBirth.year ||
+                            user.dateOfBirth.year == undefined)) ||
+                        (displayErr && user.dateOfBirth == undefined)
+                          ? "red"
+                          : "transparent",
                     }}
                     key={0}
                     data={Helpers.returnDates().years}
                     onSelect={(selectedItem) => {
+                      setDisplayErr(false);
                       setUser({
                         ...user,
                         dateOfBirth: {
+                          // If date of birth exists spread it, else, spread nothing
                           ...(user.dateOfBirth || {}),
                           year: selectedItem,
                         },
@@ -114,12 +239,22 @@ const GeneralForm = ({ styles, formProgress, user, setUser }) => {
                   <SelectDropdown
                     buttonStyle={{
                       ...styles.dropDown,
-                      flex: 0.5,
+                      flex: 0.33,
                       marginHorizontal: 10,
+                      borderWidth: 0.8,
+                      borderColor:
+                        (displayErr &&
+                          user.dateOfBirth !== undefined &&
+                          (!user.dateOfBirth.month ||
+                            user.dateOfBirth.month == undefined)) ||
+                        (displayErr && user.dateOfBirth == undefined)
+                          ? "red"
+                          : "transparent",
                     }}
                     key={1}
                     data={Helpers.returnDates().monthNames}
                     onSelect={(selectedItem) => {
+                      setDisplayErr(false);
                       setUser({
                         ...user,
                         dateOfBirth: {
@@ -138,11 +273,21 @@ const GeneralForm = ({ styles, formProgress, user, setUser }) => {
                   <SelectDropdown
                     buttonStyle={{
                       ...styles.dropDown,
-                      flex: 0.5,
+                      flex: 0.33,
+                      borderWidth: 0.8,
+                      borderColor:
+                        (displayErr &&
+                          user.dateOfBirth !== undefined &&
+                          (!user.dateOfBirth.day ||
+                            user.dateOfBirth.day == undefined)) ||
+                        (displayErr && user.dateOfBirth == undefined)
+                          ? "red"
+                          : "transparent",
                     }}
                     key={3}
                     data={Helpers.returnDates().days}
                     onSelect={(selectedItem) => {
+                      setDisplayErr(false);
                       setUser({
                         ...user,
                         dateOfBirth: {
@@ -166,15 +311,27 @@ const GeneralForm = ({ styles, formProgress, user, setUser }) => {
                 {/* // ? For the first one, render a regular text input. The second is always the select input */}
                 {i != 0 ? (
                   <TextInput
-                    style={{ ...styles.textInput, marginBottom: 10 }}
+                    style={{
+                      ...styles.textInput,
+                      marginBottom: 10,
+                      borderBottomColor:
+                        displayErr &&
+                        // If the current data is missing
+                        !user[questions[formProgress].stateLabel[1]] &&
+                        // AND the prompt is required, display which one
+                        questions[formProgress].isRequired[1] == true
+                          ? "red"
+                          : "black",
+                    }}
                     fontSize={28}
                     placeholder={prompt}
-                    onChangeText={(text) =>
+                    onChangeText={(text) => {
+                      setDisplayErr(false);
                       setUser({
                         ...user,
                         [questions[formProgress].stateLabel[1]]: text,
-                      })
-                    }
+                      });
+                    }}
                     defaultValue={
                       user[questions[formProgress].stateLabel[1]] &&
                       user[questions[formProgress].stateLabel[1]]
@@ -184,9 +341,21 @@ const GeneralForm = ({ styles, formProgress, user, setUser }) => {
                   <SelectDropdown
                     // By adding the key, every time we generate a new SelectDropdown element, it re-renders
                     key={formProgress}
-                    buttonStyle={styles.dropDown}
+                    buttonStyle={{
+                      ...styles.dropDown,
+                      borderWidth: 0.8,
+                      borderColor:
+                        displayErr &&
+                        // If the current data is missing
+                        !user[questions[formProgress].stateLabel[0]] &&
+                        // AND the prompt is required, display which one
+                        questions[formProgress].isRequired[0] == true
+                          ? "red"
+                          : "transparent",
+                    }}
                     data={questions[formProgress].options}
                     onSelect={(selectedItem, index) => {
+                      setDisplayErr(false);
                       setUser({
                         ...user,
                         // Index of the label is equal to the index of the state label
@@ -206,13 +375,31 @@ const GeneralForm = ({ styles, formProgress, user, setUser }) => {
             questions[formProgress].options ? (
               <>
                 <SelectDropdown
-                  buttonStyle={styles.dropDown}
+                  buttonStyle={{
+                    ...styles.dropDown,
+                    borderWidth: 0.8,
+                    borderColor:
+                      displayErr &&
+                      // If the current data is missing
+                      !user[
+                        questions[formProgress].stateLabel[
+                          getIndexOfLabel(prompt)
+                        ]
+                      ] &&
+                      // AND the prompt is required, display which one
+                      questions[formProgress].isRequired[
+                        getIndexOfLabel(prompt)
+                      ] == true
+                        ? "red"
+                        : "transparent",
+                  }}
                   buttonTextStyle={{
                     textAlign: "left",
                   }}
                   key={formProgress}
                   data={questions[formProgress].options}
                   onSelect={(selectedItem, index) => {
+                    setDisplayErr(false);
                     setUser({
                       ...user,
                       // Index of the label is equal to the index of the state label
@@ -248,10 +435,28 @@ const GeneralForm = ({ styles, formProgress, user, setUser }) => {
                   )
                 ) : (
                   <TextInput
-                    style={{ ...styles.textInput, marginBottom: 10 }}
+                    style={{
+                      ...styles.textInput,
+                      marginBottom: 10,
+                      borderBottomColor:
+                        displayErr &&
+                        // If the current data is missing
+                        !user[
+                          questions[formProgress].stateLabel[
+                            getIndexOfLabel(prompt)
+                          ]
+                        ] &&
+                        // AND the prompt is required, display which one
+                        questions[formProgress].isRequired[
+                          getIndexOfLabel(prompt)
+                        ] == true
+                          ? "red"
+                          : "black",
+                    }}
                     fontSize={28}
                     placeholder={prompt}
                     onChangeText={(text) => {
+                      setDisplayErr(false);
                       setUser({
                         ...user,
                         [questions[formProgress].stateLabel[
@@ -270,6 +475,11 @@ const GeneralForm = ({ styles, formProgress, user, setUser }) => {
           </View>
         );
       })}
+      <Text>
+        {displayErr && (
+          <Text style={{ color: "red" }}>Fill all required fields</Text>
+        )}
+      </Text>
     </View>
   );
 };
