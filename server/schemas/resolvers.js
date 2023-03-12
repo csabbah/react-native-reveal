@@ -27,8 +27,9 @@ const resolvers = {
       return User.find();
     },
     isExistingUser: async (parent, { email, phoneNumber, apple }) => {
-      const checkApple = await User.findOne({ apple: apple });
-      const checkEmail = await User.findOne({ email: email });
+      // If apple and or email inputs are empty, return false
+      const checkApple = !apple ? false : await User.findOne({ apple: apple });
+      const checkEmail = !email ? false : await User.findOne({ email: email });
 
       const hashedPhoneNumber = crypto
         .createHash("sha256")
