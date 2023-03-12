@@ -58,6 +58,37 @@ const ProfileSetup = ({ route }) => {
     phoneNumber && setUser({ ...user, phoneNumber: phoneNumber });
   }, [phoneNumber]);
 
+  // Handle progressing through the forms
+  const handleContinue = () => {
+    // If show prompts is false then progress through the regular form
+    if (!showPrompts) {
+      return formProgress == questions.length - 1
+        ? setShowPrompts(true)
+        : setFormProgress(formProgress + 1);
+    }
+    // If show prompts true, that means we're looking through the prompts so progress them
+    promptProgress == 1
+      ? handleFormSubmit()
+      : selectedItems.length !== 5
+      ? alert("Need to choose 5 prompts to continue")
+      : setPromptProgress(promptProgress + 1);
+  };
+
+  // Handle going back through the forms
+  const handlePrevious = () => {
+    // If show prompts is false then progress through the regular form
+    if (!showPrompts) {
+      return formProgress == 0
+        ? navigation.navigate("Welcome")
+        : setFormProgress(formProgress - 1);
+    }
+
+    // If show prompts true, that means we're looking through the prompts so progress them
+    promptProgress == 0
+      ? setShowPrompts(false)
+      : setPromptProgress(promptProgress - 1);
+  };
+
   return (
     <View style={styles.mainWrapper}>
       <KeyboardAvoidingView
@@ -92,38 +123,12 @@ const ProfileSetup = ({ route }) => {
 
           {/* // ? Below handles the progression of the form */}
           <View style={{ ...styles.inputWrapper, marginBottom: 100 }}>
-            <TouchableOpacity
-              onPress={() =>
-                // If show prompts is false then progress through the regular form
-                !showPrompts
-                  ? formProgress == questions.length - 1
-                    ? setShowPrompts(true)
-                    : setFormProgress(formProgress + 1)
-                  : // If show prompts true, that means we're looking through the prompts so progress them
-                  promptProgress == 1
-                  ? handleFormSubmit()
-                  : selectedItems.length !== 5
-                  ? alert("Need to choose 5 prompts to continue")
-                  : setPromptProgress(promptProgress + 1)
-              }
-            >
+            <TouchableOpacity onPress={handleContinue}>
               <View style={styles.continueBtn}>
                 <Text style={{ fontSize: 16 }}>Continue</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                // If show prompts is false then progress through the regular form
-                !showPrompts
-                  ? formProgress == 0
-                    ? navigation.navigate("Welcome")
-                    : setFormProgress(formProgress - 1)
-                  : // If show prompts true, that means we're looking through the prompts so progress them
-                  promptProgress == 0
-                  ? setShowPrompts(false)
-                  : setPromptProgress(promptProgress - 1);
-              }}
-            >
+            <TouchableOpacity onPress={handlePrevious}>
               <View
                 style={{
                   ...styles.continueBtn,
